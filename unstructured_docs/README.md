@@ -4,31 +4,31 @@ This directory contains comprehensive business documents across multiple formats
 
 ## Document Collection Overview
 
-### Total Documents: 35 files
+### Total Documents: 55 files
 - **10 Markdown files** (source content)
 - **14 Word documents** (.docx format) 
 - **4 PowerPoint presentations** (.pptx format)
-- **5 PDF contracts** (vendor agreements)
+- **25 PDF files** (converted documents + original contracts)
 - **2 Contract amendments** (.docx format)
 
 ## Business Unit Organization
 
-### 📊 Finance Department (20 files)
+### 📊 Finance Department (28 files)
 **Documents:**
-- `Q4_2024_Financial_Report.md/docx` - Comprehensive quarterly financial analysis
-- `Expense_Policy_2025.md/docx` - Corporate expense guidelines and procedures
-- `Vendor_Management_Policy.md/docx` - Vendor selection and management protocols
-- `Q4_2024_Financial_Results.pptx` - Executive presentation with financial highlights
+- `Q4_2024_Financial_Report.md/docx/pdf` - Comprehensive quarterly financial analysis
+- `Expense_Policy_2025.md/docx/pdf` - Corporate expense guidelines and procedures
+- `Vendor_Management_Policy.md/docx/pdf` - Vendor selection and management protocols
+- `Q4_2024_Financial_Results.pptx/pdf` - Executive presentation with financial highlights
 - `Sample_Return_Policies_Summary.md` - Comprehensive vendor return policies guide
 
-**Vendor Contracts (12 files):**
+**Vendor Contracts (15 files):**
 - **TechCorp Solutions** - IT Infrastructure ($456,780 annually)
 - **Global Logistics Partners** - Supply Chain ($334,920 annually)
 - **Marketing Dynamics Inc** - Advertising Services ($287,640 annually)
 - **Professional Services LLC** - Consulting ($243,560 annually)
 - **Office Solutions Pro** - Office Supplies ($198,430 annually)
-- Each vendor has: Contract.pdf, Contract.docx
-- Contract amendments for TechCorp and Marketing Dynamics
+- Each vendor has: Contract.pdf (original + converted), Contract.docx
+- Contract amendments for TechCorp and Marketing Dynamics (docx + pdf)
 
 **Content Highlights:**
 - Revenue: $12.8M (+15% YoY)
@@ -37,11 +37,11 @@ This directory contains comprehensive business documents across multiple formats
 - Budget vs. actual performance metrics
 - Risk management and compliance reporting
 
-### 🎯 Sales Department (5 files)
+### 🎯 Sales Department (8 files)
 **Documents:**
-- `Sales_Playbook_2025.md/docx` - Complete sales methodology and processes
-- `Customer_Success_Stories.md/docx` - Case studies and customer wins
-- `Sales_Performance_Q4_2024.pptx` - Performance review and strategy presentation
+- `Sales_Playbook_2025.md/docx/pdf` - Complete sales methodology and processes
+- `Customer_Success_Stories.md/docx/pdf` - Case studies and customer wins
+- `Sales_Performance_Q4_2024.pptx/pdf` - Performance review and strategy presentation
 
 **Content Highlights:**
 - Sales methodology (MEDDIC framework)
@@ -50,11 +50,11 @@ This directory contains comprehensive business documents across multiple formats
 - Performance metrics and KPIs
 - Real customer success stories with named sales reps
 
-### 📈 Marketing Department (5 files)
+### 📈 Marketing Department (8 files)
 **Documents:**
-- `2025_Marketing_Strategy.md/docx` - Annual marketing strategy and campaign plans
-- `Campaign_Performance_Report.md/docx` - Q4 campaign results and ROI analysis
-- `Marketing_Strategy_2025.pptx` - Strategic presentation with budget allocation
+- `2025_Marketing_Strategy.md/docx/pdf` - Annual marketing strategy and campaign plans
+- `Campaign_Performance_Report.md/docx/pdf` - Q4 campaign results and ROI analysis
+- `Marketing_Strategy_2025.pptx/pdf` - Strategic presentation with budget allocation
 
 **Content Highlights:**
 - $3M annual marketing budget allocation
@@ -63,11 +63,11 @@ This directory contains comprehensive business documents across multiple formats
 - Account-based marketing (ABM) programs
 - Event marketing and trade show performance
 
-### 👥 HR Department (5 files)
+### 👥 HR Department (8 files)
 **Documents:**
-- `Employee_Handbook_2025.md/docx` - Comprehensive employee policies and benefits
-- `Performance_Review_Guidelines.md/docx` - Performance management processes
-- `HR_Department_Overview_2025.pptx` - Benefits and employee program overview
+- `Employee_Handbook_2025.md/docx/pdf` - Comprehensive employee policies and benefits
+- `Performance_Review_Guidelines.md/docx/pdf` - Performance management processes
+- `HR_Department_Overview_2025.pptx/pdf` - Benefits and employee program overview
 
 **Content Highlights:**
 - Employee benefits and wellness programs
