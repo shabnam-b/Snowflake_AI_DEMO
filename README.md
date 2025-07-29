@@ -46,7 +46,7 @@ The following diagram shows how all components work together in the Snowflake In
 graph TD
     subgraph "GitHub Repository: NickAkincilar/Snowflake_AI_DEMO"
         B[CSV Files<br/>17 demo_data files]
-        C[Unstructured Docs<br/>PDF/DOCX/PPTX files]
+        C[Unstructured Docs<br/>PDF files]
     end
 
     subgraph "Git Integration Layer"
@@ -161,7 +161,7 @@ graph TD
 ```
 
 ### Data Flow Explanation:
-1. **Source Repository**: GitHub repository contains both CSV files (17 demo data files) and unstructured documents (PDF/DOCX/PPTX)
+1. **Source Repository**: GitHub repository contains both CSV files (17 demo data files) and unstructured documents (PDF)
 2. **Git Integration**: Git API Integration (SF_AI_DEMO_REPO) automatically syncs all files from GitHub to Snowflake's internal stage
 3. **Structured Data**: CSV files populate 13 dimension tables and 4 fact tables in a star schema
 4. **Unstructured Data**: PDF documents are parsed and stored in the `parsed_content` table
