@@ -44,10 +44,13 @@ The following diagram shows how all components work together in the Snowflake In
 
 ```mermaid
 graph TD
-    subgraph "Data Sources"
-        A[GitHub Repository<br/>NickAkincilar/Snowflake_AI_DEMO]
+    subgraph "GitHub Repository: NickAkincilar/Snowflake_AI_DEMO"
         B[CSV Files<br/>17 demo_data files]
         C[Unstructured Docs<br/>PDF/DOCX/PPTX files]
+    end
+
+    subgraph "Git Integration Layer"
+        A[Git API Integration<br/>SF_AI_DEMO_REPO<br/>Automated file sync]
     end
 
     subgraph "Snowflake Database: SF_AI_DEMO.DEMO_SCHEMA"
@@ -96,9 +99,9 @@ graph TD
     end
 
     %% Data Flow
+    B --> A
+    C --> A
     A --> D
-    B --> D
-    C --> D
     D --> F
     D --> G
     D --> E
@@ -141,14 +144,16 @@ graph TD
 
     %% Styling
     classDef dataSource fill:#e1f5fe
-    classDef database fill:#f3e5fe
+    classDef gitIntegration fill:#e8eaf6
+    classDef database fill:#f3e5f5
     classDef semantic fill:#e8f5e8
     classDef analyst fill:#e3f2fd
     classDef search fill:#fff3e0
     classDef agent fill:#ffebee
     classDef user fill:#f1f8e9
     
-    class A,B,C dataSource
+    class B,C dataSource
+    class A gitIntegration
     class D,E,F,G database
     class H,I,J,K semantic
     class S,T,U,V analyst
@@ -158,14 +163,15 @@ graph TD
 ```
 
 ### Data Flow Explanation:
-1. **Data Ingestion**: GitHub repository automatically syncs CSV files and unstructured documents to Snowflake's internal stage
-2. **Structured Data**: CSV files populate 13 dimension tables and 4 fact tables in a star schema
-3. **Unstructured Data**: PDF documents are parsed and stored in the `parsed_content` table
-4. **Semantic Layer**: Business-specific semantic views provide natural language query capabilities over structured data
-5. **Cortex Analyst Layer**: Each semantic view connects to a dedicated Text2SQL service for natural language to SQL conversion
-6. **Search Services**: Domain-specific Cortex Search services enable vector search over unstructured documents
-7. **AI Orchestration**: The Snowflake Intelligence Agent orchestrates between Text2SQL services and Search services
-8. **User Access**: Users interact through API connections to the agent for both natural language queries and direct SQL access
+1. **Source Repository**: GitHub repository contains both CSV files (17 demo data files) and unstructured documents (PDF/DOCX/PPTX)
+2. **Git Integration**: Git API Integration (SF_AI_DEMO_REPO) automatically syncs all files from GitHub to Snowflake's internal stage
+3. **Structured Data**: CSV files populate 13 dimension tables and 4 fact tables in a star schema
+4. **Unstructured Data**: PDF documents are parsed and stored in the `parsed_content` table
+5. **Semantic Layer**: Business-specific semantic views provide natural language query capabilities over structured data
+6. **Cortex Analyst Layer**: Each semantic view connects to a dedicated Text2SQL service for natural language to SQL conversion
+7. **Search Services**: Domain-specific Cortex Search services enable vector search over unstructured documents
+8. **AI Orchestration**: The Snowflake Intelligence Agent orchestrates between Text2SQL services and Search services
+9. **User Access**: Users interact through API connections to the agent for both natural language queries and direct SQL access
 
 ## Database Schema
 
@@ -206,40 +212,7 @@ graph TD
    - Run `SHOW CORTEX SEARCH SERVICES;` to verify 4 search services
    - Test agent: `SELECT SNOWFLAKE_INTELLIGENCE.AGENTS.COMPANY_CHATBOT_AGENT('What are our monthly sales for 2025?');`
 
-## Usage Examples
 
-### Using the Snowflake Intelligence Agent
-```sql
--- Ask cross-domain business questions
-SELECT SNOWFLAKE_INTELLIGENCE.AGENTS.COMPANY_CHATBOT_AGENT(
-    'What are our top performing sales reps and their monthly performance?'
-);
-
--- Query with document context
-SELECT SNOWFLAKE_INTELLIGENCE.AGENTS.COMPANY_CHATBOT_AGENT(
-    'What is our expense policy for travel and how does it compare to actual spend by department?'
-);
-```
-
-### Direct Cortex Analyst Queries
-```sql
--- Finance analysis
-SELECT SNOWFLAKE.CORTEX.ANALYST('What was our total revenue by month for 2025?', 
-    'SF_AI_DEMO.DEMO_SCHEMA.FINANCE_SEMANTIC_VIEW');
-
--- Sales performance
-SELECT SNOWFLAKE.CORTEX.ANALYST('Show me top 10 customers by revenue', 
-    'SF_AI_DEMO.DEMO_SCHEMA.SALES_SEMANTIC_VIEW');
-```
-
-### Direct Cortex Search Queries
-```sql
--- Search finance documents
-SELECT SNOWFLAKE.CORTEX.SEARCH_PREVIEW(
-    'SF_AI_DEMO.DEMO_SCHEMA.SEARCH_FINANCE_DOCS',
-    'vendor payment terms and return policies'
-);
-```
 
 ## Agent Capabilities
 
