@@ -95,7 +95,6 @@ graph TD
 
     subgraph "User Interface"
         Q[Natural Language Queries<br/>Business Questions]
-        R[SQL Queries<br/>Direct access]
     end
 
     %% Data Flow
@@ -140,7 +139,6 @@ graph TD
     
     %% User Access via API
     P -->|API| Q
-    P -->|API| R
 
     %% Styling
     classDef dataSource fill:#e1f5fe
@@ -159,7 +157,7 @@ graph TD
     class S,T,U,V analyst
     class L,M,N,O search
     class P agent
-    class Q,R user
+    class Q user
 ```
 
 ### Data Flow Explanation:
@@ -171,7 +169,7 @@ graph TD
 6. **Cortex Analyst Layer**: Each semantic view connects to a dedicated Text2SQL service for natural language to SQL conversion
 7. **Search Services**: Domain-specific Cortex Search services enable vector search over unstructured documents
 8. **AI Orchestration**: The Snowflake Intelligence Agent orchestrates between Text2SQL services and Search services
-9. **User Access**: Users interact through API connections to the agent for both natural language queries and direct SQL access
+9. **User Access**: Users interact through API connections to the agent using natural language queries
 
 ## Database Schema
 
