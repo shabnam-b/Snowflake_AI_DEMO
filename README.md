@@ -72,6 +72,13 @@ graph TD
         K[HR_SEMANTIC_VIEW<br/>Employees, departments, jobs, locations]
     end
 
+    subgraph "Cortex Analyst Text2SQL"
+        S[Query Finance Datamart<br/>Text-to-SQL Service]
+        T[Query Sales Datamart<br/>Text-to-SQL Service]
+        U[Query Marketing Datamart<br/>Text-to-SQL Service]
+        V[Query HR Datamart<br/>Text-to-SQL Service]
+    end
+
     subgraph "Cortex Search Services"
         L[Search_finance_docs<br/>Finance documents & policies]
         M[Search_sales_docs<br/>Sales playbooks & stories]
@@ -106,6 +113,12 @@ graph TD
     F --> K
     G --> K
     
+    %% Cortex Analyst connections
+    H --> S
+    I --> T
+    J --> U
+    K --> V
+    
     %% Search Services
     E --> L
     E --> M
@@ -113,30 +126,24 @@ graph TD
     E --> O
     
     %% Agent Connections
-    H --> P
-    I --> P
-    J --> P
-    K --> P
+    S --> P
+    T --> P
+    U --> P
+    V --> P
     L --> P
     M --> P
     N --> P
     O --> P
     
-    %% User Access
-    Q --> P
-    R --> H
-    R --> I
-    R --> J
-    R --> K
-    R --> L
-    R --> M
-    R --> N
-    R --> O
+    %% User Access via API
+    P -->|API| Q
+    P -->|API| R
 
     %% Styling
     classDef dataSource fill:#e1f5fe
     classDef database fill:#f3e5fe
     classDef semantic fill:#e8f5e8
+    classDef analyst fill:#e3f2fd
     classDef search fill:#fff3e0
     classDef agent fill:#ffebee
     classDef user fill:#f1f8e9
@@ -144,6 +151,7 @@ graph TD
     class A,B,C dataSource
     class D,E,F,G database
     class H,I,J,K semantic
+    class S,T,U,V analyst
     class L,M,N,O search
     class P agent
     class Q,R user
@@ -154,9 +162,10 @@ graph TD
 2. **Structured Data**: CSV files populate 13 dimension tables and 4 fact tables in a star schema
 3. **Unstructured Data**: PDF documents are parsed and stored in the `parsed_content` table
 4. **Semantic Layer**: Business-specific semantic views provide natural language query capabilities over structured data
-5. **Search Services**: Domain-specific Cortex Search services enable vector search over unstructured documents
-6. **AI Orchestration**: The Snowflake Intelligence Agent combines both structured and unstructured data sources
-7. **User Access**: Users can interact through natural language queries (via the agent) or direct SQL queries
+5. **Cortex Analyst Layer**: Each semantic view connects to a dedicated Text2SQL service for natural language to SQL conversion
+6. **Search Services**: Domain-specific Cortex Search services enable vector search over unstructured documents
+7. **AI Orchestration**: The Snowflake Intelligence Agent orchestrates between Text2SQL services and Search services
+8. **User Access**: Users interact through API connections to the agent for both natural language queries and direct SQL access
 
 ## Database Schema
 
