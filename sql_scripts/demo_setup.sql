@@ -776,8 +776,8 @@ GRANT CREATE AGENT ON SCHEMA snowflake_intelligence.agents TO ROLE SF_Intelligen
 use role SF_Intelligence_Demo;
 -- CREATES A SNOWFLAKE INTELLIGENCE AGENT WITH MULTIPLE TOOLS
 
-CREATE OR REPLACE AGENT SNOWFLAKE_INTELLIGENCE.AGENTS.Company_Chatbot_Agent
-WITH PROFILE='{ "display_name": "Company Chatbot Agent" }'
+CREATE OR REPLACE AGENT SNOWFLAKE_INTELLIGENCE.AGENTS.Company_Chatbot_Agent_Retail
+WITH PROFILE='{ "display_name": "Company Chatbot Agent - Retail" }'
     COMMENT=$$ This is an agent that can answer questions about company specific Sales, Marketing, HR & Finance questions. $$
 FROM SPECIFICATION $$
 {
@@ -785,7 +785,9 @@ FROM SPECIFICATION $$
     "instructions": {
         "response": "You are a data analyst who has access to sales, finance, marketing & HR datamarts.  If user does not specify a date range assume it for year 2025. Leverage data from all domains to analyse & answer user questions. Provide visualizations if possible. Trendlines should default to linecharts, Categories Barchart.",
         
-        "orchestration": "Use cortex search for known entities and pass the results to cortex analyst for detailed analysis. ",
+        "orchestration": "Use cortex search for known entities and pass the results to cortex analyst for detailed analysis. 
+        
+                        If answering sales related question from datamart, Always make sure to include the product_dim table & filter product VERTICAL by 'Retail' for all questions.",
         
         "sample_questions": [
             { "question": "What are our monthly sales last 12 months?" }
@@ -831,7 +833,7 @@ FROM SPECIFICATION $$
         
         {
             "tool_spec": {
-            "description": "Allows users to query Sales data for a company in terms of Sales data such as products, sales reps & etc.",
+            "description": "Allows users to query Sales data for a company in terms of Sales data such as products, sales reps & etc. ",
             "name": "Query Sales Datamart",
             "type": "cortex_analyst_text_to_sql"
             }
@@ -903,3 +905,4 @@ FROM SPECIFICATION $$
         }
 }
 $$;
+

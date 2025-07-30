@@ -169,7 +169,7 @@ graph TD
 6. **Cortex Analyst Layer**: Each semantic view connects to a dedicated Text2SQL service for natural language to SQL conversion
 7. **Search Services**: Domain-specific Cortex Search services enable vector search over unstructured documents
 8. **AI Orchestration**: The Snowflake Intelligence Agent orchestrates between Text2SQL services and Search services
-9. **User Access**: Users interact through Snowflake Intelligence agent using natural language queries
+9. **User Access**: Users interact through API connections to the agent using natural language queries
 
 ## Database Schema
 
@@ -191,7 +191,7 @@ graph TD
 1. **Run the complete setup script**:
    ```sql
    -- Execute in Snowflake worksheet
-    /sql_scripts/demo_setup.sql
+   @SF_IntelligenceDemo_Full/sql_scripts/demo_setup.sql
    ```
 
 2. **What the script creates**:
@@ -219,4 +219,61 @@ The Company Chatbot Agent can:
 - **Search unstructured documents** to provide context and policy information
 - **Generate visualizations** including trend lines, bar charts, and analytics
 - **Combine insights** from multiple data sources for comprehensive answers
-- **Understand business context** and provide domain-specific insights 
+- **Understand business context** and provide domain-specific insights
+
+## Demo Script: Cross-Functional Business Analysis
+
+The following questions demonstrate the agent's ability to perform cross-domain analysis, connecting insights across Sales, HR, Marketing, and Finance:
+
+### 🎯 Sales Performance Analysis
+1. **Sales Trends & Performance**  
+   "Show me monthly sales trends for 2025 with visualizations. Which months had the highest revenue?"
+
+2. **Top Products & Revenue Drivers**  
+   "What are our top 5 products by revenue in 2025? Show me their performance by region."
+
+3. **Sales Rep Performance**  
+   "Who are our top performing sales representatives? Show their individual revenue contributions and deal counts."
+
+### 👥 HR & Workforce Analysis
+1. **Sales Rep Tenure & Performance Correlation**  
+   "What is the average tenure of our top sales reps? Is there a correlation between tenure and sales performance?"
+
+2. **Department Staffing & Costs**  
+   "Show me employee headcount and average salary by department. Which departments have the highest attrition rates?"
+
+3. **Workforce Distribution & Performance**  
+   "How are our employees distributed across locations? What are the performance differences by location?"
+
+### 📈 Marketing Campaign Effectiveness
+1. **Campaign ROI & Lead Generation**  
+   "Which marketing campaigns generated the most leads in 2025? Show me the cost per lead by channel."
+
+2. **Channel Performance & Budget Allocation**  
+   "Compare marketing spend and impressions across different channels. Which channels provide the best ROI?"
+
+3. **Regional Marketing Effectiveness**  
+   "How do marketing campaign results vary by region? Which regions have the highest conversion rates?"
+
+### 💰 Finance & Cross-Domain Integration
+1. **Revenue vs Marketing Spend Analysis**  
+   "Compare our marketing spend to sales revenue by month. What is our marketing ROI and customer acquisition cost?"
+
+2. **Department Profitability & Expense Analysis**  
+   "Show me revenue and expenses by department. Which departments are most profitable and cost-effective?"
+
+3. **Vendor Spend & Policy Compliance**  
+   "What are our top vendor expenses? Check our vendor management policy - are we following procurement guidelines?"
+
+### 🔍 Cross-Functional Insights
+**Ultimate Cross-Domain Question**  
+"Create a comprehensive business dashboard showing: sales performance by top reps, their tenure and compensation, marketing campaigns that drove their leads, and the profitability of their deals. Include any relevant policy information from our documents."
+
+### 📋 Demo Flow Recommendation
+1. **Start with Sales**: Establish baseline performance metrics
+2. **Connect to HR**: Link performance to workforce characteristics  
+3. **Add Marketing Context**: Show how campaigns drive sales results
+4. **Financial Integration**: Demonstrate ROI and profitability analysis
+5. **Cross-Domain Synthesis**: Combine all insights for strategic decision-making
+
+This progression showcases how the Snowflake Intelligence Agent seamlessly connects structured data analysis with unstructured document insights across all business domains. 
