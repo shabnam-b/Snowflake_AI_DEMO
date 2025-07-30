@@ -191,7 +191,7 @@ graph TD
 1. **Run the complete setup script**:
    ```sql
    -- Execute in Snowflake worksheet
-/sql_scripts/demo_setup.sql
+    /sql_scripts/demo_setup.sql
    ```
 
 2. **What the script creates**:
