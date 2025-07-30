@@ -169,7 +169,7 @@ graph TD
 6. **Cortex Analyst Layer**: Each semantic view connects to a dedicated Text2SQL service for natural language to SQL conversion
 7. **Search Services**: Domain-specific Cortex Search services enable vector search over unstructured documents
 8. **AI Orchestration**: The Snowflake Intelligence Agent orchestrates between Text2SQL services and Search services
-9. **User Access**: Users interact through API connections to the agent using natural language queries
+9. **User Access**: Users interact through Snowflake Intelligence agent using natural language queries
 
 ## Database Schema
 
