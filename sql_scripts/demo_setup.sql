@@ -593,8 +593,7 @@ create or replace semantic view SF_AI_DEMO.DEMO_SCHEMA.SALES_SEMANTIC_VIEW
   -- ========================================================================
   -- HR SEMANTIC VIEW
   -- ========================================================================
-
-  create or replace semantic view SF_AI_DEMO.DEMO_SCHEMA.HR_SEMANTIC_VIEW
+create or replace semantic view SF_AI_DEMO.DEMO_SCHEMA.HR_SEMANTIC_VIEW
 	tables (
 		DEPARTMENTS as DEPARTMENT_DIM primary key (DEPARTMENT_KEY) with synonyms=('departments','business units') comment='Department dimension for organizational analysis',
 		EMPLOYEES as EMPLOYEE_DIM primary key (EMPLOYEE_KEY) with synonyms=('employees','staff','workforce') comment='Employee dimension with personal information',
@@ -609,17 +608,17 @@ create or replace semantic view SF_AI_DEMO.DEMO_SCHEMA.SALES_SEMANTIC_VIEW
 		HR_TO_LOCATIONS as HR_RECORDS(LOCATION_KEY) references LOCATIONS(LOCATION_KEY)
 	)
 	facts (
-		HR_RECORDS.ATTRITION_FLAG as attrition_flag comment='Attrition flag (1 = left, 0 = active)',
+		HR_RECORDS.ATTRITION_FLAG as attrition_flag with synonyms=('turnover_indicator','employee_departure_flag','separation_flag','employee_retention_status','churn_status','employee_exit_indicator') comment='Attrition flag. value is 0 if employee is currently active. 1 if employee quit & left the company. Always filter by 0 to show active employees unless specified otherwise',
 		HR_RECORDS.EMPLOYEE_RECORD as 1 comment='Count of employee records',
 		HR_RECORDS.EMPLOYEE_SALARY as salary comment='Employee salary in dollars'
 	)
 	dimensions (
 		DEPARTMENTS.DEPARTMENT_KEY as DEPARTMENT_KEY,
 		DEPARTMENTS.DEPARTMENT_NAME as department_name with synonyms=('department','business unit','division') comment='Name of the department',
+		EMPLOYEES.EMPLOYEE_KEY as EMPLOYEE_KEY,
 		EMPLOYEES.EMPLOYEE_NAME as employee_name with synonyms=('employee','staff member','person','sales rep','manager','director','executive') comment='Name of the employee',
 		EMPLOYEES.GENDER as gender with synonyms=('gender','sex') comment='Employee gender',
 		EMPLOYEES.HIRE_DATE as hire_date with synonyms=('hire date','start date') comment='Date when employee was hired',
-		EMPLOYEES.EMPLOYEE_KEY as EMPLOYEE_KEY,
 		HR_RECORDS.DEPARTMENT_KEY as DEPARTMENT_KEY,
 		HR_RECORDS.EMPLOYEE_KEY as EMPLOYEE_KEY,
 		HR_RECORDS.HR_FACT_ID as HR_FACT_ID,
@@ -636,12 +635,12 @@ create or replace semantic view SF_AI_DEMO.DEMO_SCHEMA.SALES_SEMANTIC_VIEW
 	)
 	metrics (
 		HR_RECORDS.ATTRITION_COUNT as SUM(hr_records.attrition_flag) comment='Number of employees who left',
-		HR_RECORDS.AVERAGE_SALARY as AVG(hr_records.salary) comment='Average employee salary',
+		HR_RECORDS.AVG_SALARY as AVG(hr_records.employee_salary) comment='average employee salary',
 		HR_RECORDS.TOTAL_EMPLOYEES as COUNT(hr_records.employee_record) comment='Total number of employees',
-		HR_RECORDS.TOTAL_SALARY_COST as SUM(hr_records.salary) comment='Total salary cost'
+		HR_RECORDS.TOTAL_SALARY_COST as SUM(hr_records.EMPLOYEE_SALARY) comment='Total salary cost'
 	)
 	comment='Semantic view for HR analytics and workforce management'
-	with extension (CA='{"tables":[{"name":"DEPARTMENTS","dimensions":[{"name":"DEPARTMENT_NAME"},{"name":"DEPARTMENT_KEY"}]},{"name":"EMPLOYEES","dimensions":[{"name":"EMPLOYEE_NAME"},{"name":"GENDER"},{"name":"HIRE_DATE"},{"name":"EMPLOYEE_KEY"}]},{"name":"HR_RECORDS","dimensions":[{"name":"RECORD_DATE"},{"name":"RECORD_MONTH"},{"name":"RECORD_YEAR"},{"name":"DEPARTMENT_KEY"},{"name":"EMPLOYEE_KEY"},{"name":"JOB_KEY"},{"name":"LOCATION_KEY"},{"name":"HR_FACT_ID"}],"facts":[{"name":"ATTRITION_FLAG"},{"name":"EMPLOYEE_RECORD"},{"name":"EMPLOYEE_SALARY"}],"metrics":[{"name":"ATTRITION_COUNT"},{"name":"AVERAGE_SALARY"},{"name":"TOTAL_EMPLOYEES"},{"name":"TOTAL_SALARY_COST"}]},{"name":"JOBS","dimensions":[{"name":"JOB_LEVEL"},{"name":"JOB_TITLE"},{"name":"JOB_KEY"}]},{"name":"LOCATIONS","dimensions":[{"name":"LOCATION_NAME"},{"name":"LOCATION_KEY"}]}],"relationships":[{"name":"HR_TO_DEPARTMENTS","relationship_type":"many_to_one"},{"name":"HR_TO_EMPLOYEES","relationship_type":"many_to_one"},{"name":"HR_TO_JOBS","relationship_type":"many_to_one"},{"name":"HR_TO_LOCATIONS","relationship_type":"many_to_one"}]}');
+	with extension (CA='{"tables":[{"name":"DEPARTMENTS","dimensions":[{"name":"DEPARTMENT_KEY"},{"name":"DEPARTMENT_NAME"}]},{"name":"EMPLOYEES","dimensions":[{"name":"EMPLOYEE_KEY"},{"name":"EMPLOYEE_NAME"},{"name":"GENDER"},{"name":"HIRE_DATE"}]},{"name":"HR_RECORDS","dimensions":[{"name":"DEPARTMENT_KEY"},{"name":"EMPLOYEE_KEY"},{"name":"HR_FACT_ID"},{"name":"JOB_KEY"},{"name":"LOCATION_KEY"},{"name":"RECORD_DATE"},{"name":"RECORD_MONTH"},{"name":"RECORD_YEAR"}],"facts":[{"name":"ATTRITION_FLAG","sample_values":["0","1"]},{"name":"EMPLOYEE_RECORD"},{"name":"EMPLOYEE_SALARY"}],"metrics":[{"name":"ATTRITION_COUNT"},{"name":"AVG_SALARY"},{"name":"TOTAL_EMPLOYEES"},{"name":"TOTAL_SALARY_COST"}]},{"name":"JOBS","dimensions":[{"name":"JOB_KEY"},{"name":"JOB_LEVEL"},{"name":"JOB_TITLE"}]},{"name":"LOCATIONS","dimensions":[{"name":"LOCATION_KEY"},{"name":"LOCATION_NAME"}]}],"relationships":[{"name":"HR_TO_DEPARTMENTS","relationship_type":"many_to_one"},{"name":"HR_TO_EMPLOYEES","relationship_type":"many_to_one"},{"name":"HR_TO_JOBS","relationship_type":"many_to_one"},{"name":"HR_TO_LOCATIONS","relationship_type":"many_to_one"}],"verified_queries":[{"name":"List of all active employees","question":"List of all active employees","sql":"select\\n  h.employee_key,\\n  e.employee_name,\\nfrom\\n  employees e\\n  left join hr_records h on e.employee_key = h.employee_key\\ngroup by\\n  all\\nhaving\\n  sum(h.attrition_flag) = 0;","use_as_onboarding_question":false,"verified_by":"Nick Akincilar","verified_at":1753846263},{"name":"List of all inactive employees","question":"List of all inactive employees","sql":"SELECT\\n  h.employee_key,\\n  e.employee_name\\nFROM\\n  employees AS e\\n  LEFT JOIN hr_records AS h ON e.employee_key = h.employee_key\\nGROUP BY\\n  ALL\\nHAVING\\n  SUM(h.attrition_flag) > 0","use_as_onboarding_question":false,"verified_by":"Nick Akincilar","verified_at":1753846300}],"custom_instructions":"- Each employee can have multiple hr_employee_fact records. \\n- Only one hr_employee_fact record per employee is valid and that is the one which has the highest date value."}');
 
   -- ========================================================================
   -- VERIFICATION
@@ -787,7 +786,7 @@ FROM SPECIFICATION $$
         
         "orchestration": "Use cortex search for known entities and pass the results to cortex analyst for detailed analysis. 
         
-                        If answering sales related question from datamart, Always make sure to include the product_dim table & filter product VERTICAL by 'Retail' for all questions.",
+                        If answering sales related question from datamart, Always make sure to include the product_dim table & filter product VERTICAL by 'Retail' for all questions but don't show this fact while explaining thinking steps.",
         
         "sample_questions": [
             { "question": "What are our monthly sales last 12 months?" }
