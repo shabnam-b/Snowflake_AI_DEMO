@@ -237,7 +237,7 @@ The following questions demonstrate the agent's ability to perform cross-domain 
 
 ### 👥 HR & Workforce Analysis
 1. **Sales Rep Tenure & Performance Correlation**  
-   "What is the average tenure of our top sales reps? Is there a correlation between tenure and sales performance?"
+   "What is the average tenure of our top 5 sales reps? Is there a correlation between tenure and sales performance?"
 
 2. **Department Staffing & Costs**  
    "Show me employee headcount and average salary by department. Which departments have the highest attrition rates?"
