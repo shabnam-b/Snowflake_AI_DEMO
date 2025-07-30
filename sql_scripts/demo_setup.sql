@@ -247,6 +247,7 @@ use role SF_Intelligence_Demo;
         campaign_fact_id INT PRIMARY KEY,
         date DATE NOT NULL,
         campaign_key INT NOT NULL,
+        product_key INT NOT NULL,
         channel_key INT NOT NULL,
         region_key INT NOT NULL,
         spend DECIMAL(10,2) NOT NULL,
@@ -554,17 +555,19 @@ create or replace semantic view SF_AI_DEMO.DEMO_SCHEMA.SALES_SEMANTIC_VIEW
   -- MARKETING SEMANTIC VIEW
   -- ========================================================================
 
-  create or replace semantic view SF_AI_DEMO.DEMO_SCHEMA.MARKETING_SEMANTIC_VIEW
+    create or replace semantic view SF_AI_DEMO.DEMO_SCHEMA.MARKETING_SEMANTIC_VIEW
 	tables (
 		CAMPAIGNS as MARKETING_CAMPAIGN_FACT primary key (CAMPAIGN_FACT_ID) with synonyms=('marketing campaigns','campaign data') comment='Marketing campaign performance data',
 		CAMPAIGN_DETAILS as CAMPAIGN_DIM primary key (CAMPAIGN_KEY) with synonyms=('campaign info','campaign details') comment='Campaign dimension with objectives and names',
 		CHANNELS as CHANNEL_DIM primary key (CHANNEL_KEY) with synonyms=('marketing channels','channels') comment='Marketing channel information',
-		REGIONS as REGION_DIM primary key (REGION_KEY) with synonyms=('territories','regions','markets') comment='Regional information for campaign analysis'
+		REGIONS as REGION_DIM primary key (REGION_KEY) with synonyms=('territories','regions','markets') comment='Regional information for campaign analysis',
+		PRODUCTS as PRODUCT_DIM primary key (PRODUCT_KEY) with synonyms=('products','items') comment='Product dimension for campaign-specific analysis'
 	)
 	relationships (
 		CAMPAIGNS_TO_DETAILS as CAMPAIGNS(CAMPAIGN_KEY) references CAMPAIGN_DETAILS(CAMPAIGN_KEY),
 		CAMPAIGNS_TO_CHANNELS as CAMPAIGNS(CHANNEL_KEY) references CHANNELS(CHANNEL_KEY),
-		CAMPAIGNS_TO_REGIONS as CAMPAIGNS(REGION_KEY) references REGIONS(REGION_KEY)
+		CAMPAIGNS_TO_REGIONS as CAMPAIGNS(REGION_KEY) references REGIONS(REGION_KEY),
+		CAMPAIGNS_TO_PRODUCTS as CAMPAIGNS(PRODUCT_KEY) references PRODUCTS(PRODUCT_KEY)
 	)
 	facts (
 		CAMPAIGNS.CAMPAIGN_RECORD as 1 comment='Count of campaign activities',
@@ -576,10 +579,14 @@ create or replace semantic view SF_AI_DEMO.DEMO_SCHEMA.SALES_SEMANTIC_VIEW
 		CAMPAIGNS.CAMPAIGN_DATE as date with synonyms=('date','campaign date') comment='Date of the campaign activity',
 		CAMPAIGNS.CAMPAIGN_MONTH as MONTH(date) comment='Month of the campaign',
 		CAMPAIGNS.CAMPAIGN_YEAR as YEAR(date) comment='Year of the campaign',
+		CAMPAIGNS.PRODUCT_KEY as product_key with synonyms=('product_id','product identifier') comment='Product identifier for campaign targeting',
 		CAMPAIGN_DETAILS.CAMPAIGN_NAME as campaign_name with synonyms=('campaign','campaign title') comment='Name of the marketing campaign',
 		CAMPAIGN_DETAILS.OBJECTIVE as 'campaign_objective' with synonyms=('objective','goal','purpose') comment='Campaign objective',
 		CHANNELS.CHANNEL_NAME as channel_name with synonyms=('channel','marketing channel') comment='Name of the marketing channel',
-		REGIONS.REGION_NAME as region_name with synonyms=('region','market','territory') comment='Name of the region'
+		REGIONS.REGION_NAME as region_name with synonyms=('region','market','territory') comment='Name of the region',
+		PRODUCTS.PRODUCT_NAME as product_name with synonyms=('product','item','product title') comment='Name of the product being promoted',
+		PRODUCTS.PRODUCT_CATEGORY as category_name with synonyms=('category','product category') comment='Category of the product',
+		PRODUCTS.PRODUCT_VERTICAL as vertical with synonyms=('vertical','industry') comment='Business vertical of the product'
 	)
 	metrics (
 		CAMPAIGNS.AVERAGE_SPEND as AVG(campaigns.spend) comment='Average campaign spend',
@@ -588,7 +595,7 @@ create or replace semantic view SF_AI_DEMO.DEMO_SCHEMA.SALES_SEMANTIC_VIEW
 		CAMPAIGNS.TOTAL_LEADS as SUM(campaigns.leads_generated) comment='Total leads generated',
 		CAMPAIGNS.TOTAL_SPEND as SUM(campaigns.spend) comment='Total marketing spend'
 	)
-	comment='Semantic view for marketing campaign analysis and ROI tracking';
+	comment='Semantic view for marketing campaign analysis and ROI tracking with product-specific insights';
 
   -- ========================================================================
   -- HR SEMANTIC VIEW
