@@ -10,15 +10,16 @@ This project demonstrates the comprehensive Snowflake Intelligence capabilities 
 
 ### 1. Data Infrastructure
 - **Star Schema Design**: 13 dimension tables and 4 fact tables covering Finance, Sales, Marketing, HR
+- **Salesforce CRM Integration**: 3 Salesforce tables (Accounts, Opportunities, Contacts) with 62,000+ CRM records
 - **Automated Data Loading**: Git integration pulls data from GitHub repository
-- **Realistic Sample Data**: 150,000+ records across all business domains
+- **Realistic Sample Data**: 210,000+ records across all business domains with complete customer journey
 - **Database**: `SF_AI_DEMO` with schema `DEMO_SCHEMA`
 - **Warehouse**: `Snow_Intelligence_demo_wh` (XSMALL with auto-suspend/resume)
 
 ### 2. Semantic Views (4 Business Domains)
 - **Finance Semantic View**: Financial transactions, accounts, departments, vendors
 - **Sales Semantic View**: Sales data, customers, products, regions, sales reps
-- **Marketing Semantic View**: Campaign performance, channels, leads, impressions
+- **Marketing Semantic View**: Campaign performance, channels, leads, impressions + **Revenue Attribution** (Salesforce CRM integration)
 - **HR Semantic View**: Employee data, departments, jobs, locations, attrition
 
 ### 3. Cortex Search Services (4 Domain-Specific)
@@ -66,12 +67,16 @@ graph TD
         subgraph "Fact Tables (4)"
             G[sales_fact<br/>finance_transactions<br/>marketing_campaign_fact<br/>hr_employee_fact]
         end
+        
+        subgraph "Salesforce CRM Tables (3)"
+            SF[sf_accounts<br/>sf_opportunities<br/>sf_contacts<br/>Complete customer journey]
+        end
     end
 
     subgraph "Semantic Layer"
         H[FINANCE_SEMANTIC_VIEW<br/>Financial transactions, accounts, vendors]
         I[SALES_SEMANTIC_VIEW<br/>Sales data, customers, products, reps]
-        J[MARKETING_SEMANTIC_VIEW<br/>Campaigns, channels, leads, spend]
+        J[MARKETING_SEMANTIC_VIEW<br/>Campaigns, channels, leads, spend<br/>+ Revenue Attribution via CRM]
         K[HR_SEMANTIC_VIEW<br/>Employees, departments, jobs, locations]
     end
 
@@ -103,6 +108,7 @@ graph TD
     A --> D
     D --> F
     D --> G
+    D --> SF
     D --> E
     
     %% Semantic Views
@@ -112,6 +118,7 @@ graph TD
     G --> I
     F --> J
     G --> J
+    SF --> J
     F --> K
     G --> K
     
@@ -144,6 +151,7 @@ graph TD
     classDef dataSource fill:#e1f5fe
     classDef gitIntegration fill:#e8eaf6
     classDef database fill:#f3e5f5
+    classDef crm fill:#e8f5e8
     classDef semantic fill:#e8f5e8
     classDef analyst fill:#e3f2fd
     classDef search fill:#fff3e0
@@ -153,6 +161,7 @@ graph TD
     class B,C dataSource
     class A gitIntegration
     class D,E,F,G database
+    class SF crm
     class H,I,J,K semantic
     class S,T,U,V analyst
     class L,M,N,O search
@@ -161,15 +170,17 @@ graph TD
 ```
 
 ### Data Flow Explanation:
-1. **Source Repository**: GitHub repository contains both CSV files (17 demo data files) and unstructured documents (PDF)
+1. **Source Repository**: GitHub repository contains both CSV files (20 demo data files) and unstructured documents (PDF)
 2. **Git Integration**: Git API Integration (SF_AI_DEMO_REPO) automatically syncs all files from GitHub to Snowflake's internal stage
 3. **Structured Data**: CSV files populate 13 dimension tables and 4 fact tables in a star schema
-4. **Unstructured Data**: PDF documents are parsed and stored in the `parsed_content` table
-5. **Semantic Layer**: Business-specific semantic views provide natural language query capabilities over structured data
-6. **Cortex Analyst Layer**: Each semantic view connects to a dedicated Text2SQL service for natural language to SQL conversion
-7. **Search Services**: Domain-specific Cortex Search services enable vector search over unstructured documents
-8. **AI Orchestration**: The Snowflake Intelligence Agent orchestrates between Text2SQL services and Search services
-9. **User Access**: Users interact through API connections to the agent using natural language queries
+4. **Salesforce CRM Data**: 3 additional Salesforce tables (sf_accounts, sf_opportunities, sf_contacts) provide complete customer journey tracking
+5. **Unstructured Data**: PDF documents are parsed and stored in the `parsed_content` table
+6. **Semantic Layer**: Business-specific semantic views provide natural language query capabilities over structured data
+7. **Marketing Revenue Attribution**: Enhanced Marketing Semantic View connects campaign data to Salesforce CRM for end-to-end ROI analysis
+8. **Cortex Analyst Layer**: Each semantic view connects to a dedicated Text2SQL service for natural language to SQL conversion
+9. **Search Services**: Domain-specific Cortex Search services enable vector search over unstructured documents
+10. **AI Orchestration**: The Snowflake Intelligence Agent orchestrates between Text2SQL services and Search services
+11. **User Access**: Users interact through API connections to the agent using natural language queries
 
 ## Database Schema
 
@@ -179,10 +190,15 @@ graph TD
 - `campaign_dim`, `channel_dim`, `employee_dim`, `job_dim`, `location_dim`
 
 ### Fact Tables (4)
-- `sales_fact` - Sales transactions with amounts and units
+- `sales_fact` - Sales transactions with amounts and units (12,000 records)
 - `finance_transactions` - Financial transactions across departments
-- `marketing_campaign_fact` - Campaign performance metrics
-- `hr_employee_fact` - Employee data with salary and attrition
+- `marketing_campaign_fact` - Campaign performance metrics with product targeting
+- `hr_employee_fact` - Employee data with salary and attrition (5,640 records)
+
+### Salesforce CRM Tables (3)
+- `sf_accounts` - Customer accounts linked to customer_dim (1,000 records)
+- `sf_opportunities` - Sales pipeline and revenue data (25,000 records)
+- `sf_contacts` - Contact records with campaign attribution (37,563 records)
 
 ## Setup Instructions
 
@@ -216,9 +232,11 @@ graph TD
 
 The Company Chatbot Agent can:
 - **Analyze structured data** across Finance, Sales, Marketing, and HR domains
+- **Perform revenue attribution** from marketing campaigns to closed deals via Salesforce CRM integration
 - **Search unstructured documents** to provide context and policy information
 - **Generate visualizations** including trend lines, bar charts, and analytics
 - **Combine insights** from multiple data sources for comprehensive answers
+- **Calculate marketing ROI** and customer acquisition costs across the complete customer journey
 - **Understand business context** and provide domain-specific insights
 
 ## Demo Script: Cross-Functional Business Analysis
@@ -237,7 +255,7 @@ The following questions demonstrate the agent's ability to perform cross-domain 
 
 ### 👥 HR & Workforce Analysis
 1. **Sales Rep Tenure & Performance Correlation**  
-   "What is the average tenure of our top 5 sales reps? Is there a correlation between tenure and sales performance?"
+   "What is the average tenure of our top sales reps? Is there a correlation between tenure and sales performance?"
 
 2. **Department Staffing & Costs**  
    "Show me employee headcount and average salary by department. Which departments have the highest attrition rates?"
@@ -245,35 +263,36 @@ The following questions demonstrate the agent's ability to perform cross-domain 
 3. **Workforce Distribution & Performance**  
    "How are our employees distributed across locations? What are the performance differences by location?"
 
-### 📈 Marketing Campaign Effectiveness
-1. **Campaign ROI & Lead Generation**  
-   "Which marketing campaigns generated the most leads in 2025? Show me the cost per lead by channel."
+### 📈 Marketing Campaign Effectiveness & Revenue Attribution
+1. **Campaign ROI & Revenue Generation**  
+   "Which marketing campaigns generated the most revenue in 2025? Show me marketing ROI and cost per lead by channel."
 
-2. **Channel Performance & Budget Allocation**  
-   "Compare marketing spend and impressions across different channels. Which channels provide the best ROI?"
+2. **Complete Funnel Analysis**  
+   "Show me the complete marketing funnel from impressions to closed revenue. Which campaigns have the best conversion rates?"
 
-3. **Regional Marketing Effectiveness**  
-   "How do marketing campaign results vary by region? Which regions have the highest conversion rates?"
+3. **Channel Revenue Performance**  
+   "Compare marketing spend to actual closed revenue by channel. Which channels drive the highest value customers?"
 
 ### 💰 Finance & Cross-Domain Integration
-1. **Revenue vs Marketing Spend Analysis**  
-   "Compare our marketing spend to sales revenue by month. What is our marketing ROI and customer acquisition cost?"
+1. **Marketing Attribution & Revenue Analysis**  
+   "Show me revenue generated by each marketing channel. What is our true marketing ROI from campaigns to closed deals?"
 
-2. **Department Profitability & Expense Analysis**  
-   "Show me revenue and expenses by department. Which departments are most profitable and cost-effective?"
+2. **Customer Acquisition Cost Analysis**  
+   "Calculate our customer acquisition cost by marketing channel. Which channels deliver the most profitable customers?"
 
 3. **Vendor Spend & Policy Compliance**  
    "What are our top vendor expenses? Check our vendor management policy - are we following procurement guidelines?"
 
 ### 🔍 Cross-Functional Insights
 **Ultimate Cross-Domain Question**  
-"Create a comprehensive business dashboard showing: sales performance by top reps, their tenure and compensation, marketing campaigns that drove their leads, and the profitability of their deals. Include any relevant policy information from our documents."
+"Create a comprehensive business dashboard showing: sales performance by top reps, their tenure and compensation, marketing campaigns that generated their leads, the complete customer journey from campaign to closed deal, and the ROI of each marketing channel. Include any relevant policy information from our documents."
 
 ### 📋 Demo Flow Recommendation
-1. **Start with Sales**: Establish baseline performance metrics
+1. **Start with Sales**: Establish baseline performance metrics and customer data
 2. **Connect to HR**: Link performance to workforce characteristics  
-3. **Add Marketing Context**: Show how campaigns drive sales results
-4. **Financial Integration**: Demonstrate ROI and profitability analysis
-5. **Cross-Domain Synthesis**: Combine all insights for strategic decision-making
+3. **Add Marketing Context**: Show how campaigns generate leads and drive sales results
+4. **Revenue Attribution**: Demonstrate complete customer journey from campaign to closed revenue
+5. **Financial Integration**: Calculate true marketing ROI and customer acquisition costs
+6. **Cross-Domain Synthesis**: Combine all insights for strategic decision-making
 
-This progression showcases how the Snowflake Intelligence Agent seamlessly connects structured data analysis with unstructured document insights across all business domains. 
+This progression showcases how the Snowflake Intelligence Agent seamlessly connects structured data analysis with Salesforce CRM integration and unstructured document insights across all business domains for complete revenue attribution. 
