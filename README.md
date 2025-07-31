@@ -220,11 +220,13 @@ graph TD
    - 4 Cortex Search services for documents
    - 1 Snowflake Intelligence Agent
 
-3. **Post-Setup Verification**:
+3. **Post-Setup Verification(Optional)**:
    - Run `SHOW TABLES;` to verify 17 tables created
    - Run `SHOW SEMANTIC VIEWS;` to verify 4 semantic views
    - Run `SHOW CORTEX SEARCH SERVICES;` to verify 4 search services
-   - Test agent: `SELECT SNOWFLAKE_INTELLIGENCE.AGENTS.COMPANY_CHATBOT_AGENT('What are our monthly sales for 2025?');`
+  
+4. **Run Demo**:
+   - Click in AI/ML category on the left menu & choose "Snowflake Intelligence" item
 
 
 
