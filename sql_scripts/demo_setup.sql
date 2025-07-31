@@ -12,6 +12,14 @@
     -- Switch to accountadmin role to create warehouse
     USE ROLE accountadmin;
 
+
+    CREATE DATABASE IF NOT EXISTS snowflake_intelligence;
+    CREATE SCHEMA IF NOT EXISTS snowflake_intelligence.agents;
+    -- Allow anyone to see the agents in this schema
+    GRANT USAGE ON DATABASE snowflake_intelligence TO ROLE PUBLIC;
+    GRANT USAGE ON SCHEMA snowflake_intelligence.agents TO ROLE PUBLIC;
+
+
     create or replace role SF_Intelligence_Demo;
 
 
@@ -268,6 +276,58 @@ use role SF_Intelligence_Demo;
     );
 
     -- ========================================================================
+    -- SALESFORCE CRM TABLES
+    -- ========================================================================
+
+    -- Salesforce Accounts Table
+    CREATE OR REPLACE TABLE sf_accounts (
+        account_id VARCHAR(20) PRIMARY KEY,
+        account_name VARCHAR(200) NOT NULL,
+        customer_key INT NOT NULL,
+        industry VARCHAR(100),
+        vertical VARCHAR(50),
+        billing_street VARCHAR(200),
+        billing_city VARCHAR(100),
+        billing_state VARCHAR(10),
+        billing_postal_code VARCHAR(20),
+        account_type VARCHAR(50),
+        annual_revenue DECIMAL(15,2),
+        employees INT,
+        created_date DATE
+    );
+
+    -- Salesforce Opportunities Table
+    CREATE OR REPLACE TABLE sf_opportunities (
+        opportunity_id VARCHAR(20) PRIMARY KEY,
+        sale_id INT,
+        account_id VARCHAR(20) NOT NULL,
+        opportunity_name VARCHAR(200) NOT NULL,
+        stage_name VARCHAR(100) NOT NULL,
+        amount DECIMAL(15,2) NOT NULL,
+        probability DECIMAL(5,2),
+        close_date DATE,
+        created_date DATE,
+        lead_source VARCHAR(100),
+        type VARCHAR(100)
+    );
+
+    -- Salesforce Contacts Table
+    CREATE OR REPLACE TABLE sf_contacts (
+        contact_id VARCHAR(20) PRIMARY KEY,
+        opportunity_id VARCHAR(20) NOT NULL,
+        account_id VARCHAR(20) NOT NULL,
+        first_name VARCHAR(100),
+        last_name VARCHAR(100),
+        email VARCHAR(200),
+        phone VARCHAR(50),
+        title VARCHAR(100),
+        department VARCHAR(100),
+        lead_source VARCHAR(100),
+        campaign_no INT,
+        created_date DATE
+    );
+
+    -- ========================================================================
     -- LOAD DIMENSION DATA FROM INTERNAL STAGE
     -- ========================================================================
 
@@ -378,6 +438,28 @@ use role SF_Intelligence_Demo;
     ON_ERROR = 'CONTINUE';
 
     -- ========================================================================
+    -- LOAD SALESFORCE DATA FROM INTERNAL STAGE
+    -- ========================================================================
+
+    -- Load Salesforce Accounts
+    COPY INTO sf_accounts
+    FROM @INTERNAL_DATA_STAGE/demo_data/sf_accounts.csv
+    FILE_FORMAT = CSV_FORMAT
+    ON_ERROR = 'CONTINUE';
+
+    -- Load Salesforce Opportunities
+    COPY INTO sf_opportunities
+    FROM @INTERNAL_DATA_STAGE/demo_data/sf_opportunities.csv
+    FILE_FORMAT = CSV_FORMAT
+    ON_ERROR = 'CONTINUE';
+
+    -- Load Salesforce Contacts
+    COPY INTO sf_contacts
+    FROM @INTERNAL_DATA_STAGE/demo_data/sf_contacts.csv
+    FILE_FORMAT = CSV_FORMAT
+    ON_ERROR = 'CONTINUE';
+
+    -- ========================================================================
     -- VERIFICATION
     -- ========================================================================
 
@@ -424,7 +506,17 @@ use role SF_Intelligence_Demo;
     UNION ALL
     SELECT '', 'marketing_campaign_fact', COUNT(*) FROM marketing_campaign_fact
     UNION ALL
-    SELECT '', 'hr_employee_fact', COUNT(*) FROM hr_employee_fact;
+    SELECT '', 'hr_employee_fact', COUNT(*) FROM hr_employee_fact
+    UNION ALL
+    SELECT '', '', NULL
+    UNION ALL
+    SELECT 'SALESFORCE TABLES', '', NULL
+    UNION ALL
+    SELECT '', 'sf_accounts', COUNT(*) FROM sf_accounts
+    UNION ALL
+    SELECT '', 'sf_opportunities', COUNT(*) FROM sf_opportunities
+    UNION ALL
+    SELECT '', 'sf_contacts', COUNT(*) FROM sf_contacts;
 
     -- Show all tables
     SHOW TABLES IN SCHEMA DEMO_SCHEMA; 
@@ -555,25 +647,35 @@ create or replace semantic view SF_AI_DEMO.DEMO_SCHEMA.SALES_SEMANTIC_VIEW
   -- MARKETING SEMANTIC VIEW
   -- ========================================================================
 
-    create or replace semantic view SF_AI_DEMO.DEMO_SCHEMA.MARKETING_SEMANTIC_VIEW
+        create or replace semantic view SF_AI_DEMO.DEMO_SCHEMA.MARKETING_SEMANTIC_VIEW
 	tables (
 		CAMPAIGNS as MARKETING_CAMPAIGN_FACT primary key (CAMPAIGN_FACT_ID) with synonyms=('marketing campaigns','campaign data') comment='Marketing campaign performance data',
 		CAMPAIGN_DETAILS as CAMPAIGN_DIM primary key (CAMPAIGN_KEY) with synonyms=('campaign info','campaign details') comment='Campaign dimension with objectives and names',
 		CHANNELS as CHANNEL_DIM primary key (CHANNEL_KEY) with synonyms=('marketing channels','channels') comment='Marketing channel information',
 		REGIONS as REGION_DIM primary key (REGION_KEY) with synonyms=('territories','regions','markets') comment='Regional information for campaign analysis',
-		PRODUCTS as PRODUCT_DIM primary key (PRODUCT_KEY) with synonyms=('products','items') comment='Product dimension for campaign-specific analysis'
+		PRODUCTS as PRODUCT_DIM primary key (PRODUCT_KEY) with synonyms=('products','items') comment='Product dimension for campaign-specific analysis',
+		CONTACTS as SF_CONTACTS primary key (CONTACT_ID) with synonyms=('leads','contacts','prospects') comment='Contact records generated from marketing campaigns',
+		OPPORTUNITIES as SF_OPPORTUNITIES primary key (OPPORTUNITY_ID) with synonyms=('deals','opportunities','sales pipeline') comment='Sales opportunities and revenue data',
+		ACCOUNTS as SF_ACCOUNTS primary key (ACCOUNT_ID) with synonyms=('customers','accounts','clients') comment='Customer account information for revenue analysis'
 	)
 	relationships (
 		CAMPAIGNS_TO_DETAILS as CAMPAIGNS(CAMPAIGN_KEY) references CAMPAIGN_DETAILS(CAMPAIGN_KEY),
 		CAMPAIGNS_TO_CHANNELS as CAMPAIGNS(CHANNEL_KEY) references CHANNELS(CHANNEL_KEY),
 		CAMPAIGNS_TO_REGIONS as CAMPAIGNS(REGION_KEY) references REGIONS(REGION_KEY),
-		CAMPAIGNS_TO_PRODUCTS as CAMPAIGNS(PRODUCT_KEY) references PRODUCTS(PRODUCT_KEY)
+		CAMPAIGNS_TO_PRODUCTS as CAMPAIGNS(PRODUCT_KEY) references PRODUCTS(PRODUCT_KEY),
+		CONTACTS_TO_CAMPAIGNS as CONTACTS(CAMPAIGN_NO) references CAMPAIGNS(CAMPAIGN_FACT_ID),
+		CONTACTS_TO_OPPORTUNITIES as CONTACTS(OPPORTUNITY_ID) references OPPORTUNITIES(OPPORTUNITY_ID),
+		OPPORTUNITIES_TO_ACCOUNTS as OPPORTUNITIES(ACCOUNT_ID) references ACCOUNTS(ACCOUNT_ID),
+		CONTACTS_TO_ACCOUNTS as CONTACTS(ACCOUNT_ID) references ACCOUNTS(ACCOUNT_ID)
 	)
 	facts (
 		CAMPAIGNS.CAMPAIGN_RECORD as 1 comment='Count of campaign activities',
 		CAMPAIGNS.CAMPAIGN_SPEND as spend comment='Marketing spend in dollars',
 		CAMPAIGNS.IMPRESSIONS as impressions comment='Number of impressions',
-		CAMPAIGNS.LEADS_GENERATED as leads_generated comment='Number of leads generated'
+		CAMPAIGNS.LEADS_GENERATED as leads_generated comment='Number of leads generated',
+		CONTACTS.CONTACT_RECORD as 1 comment='Count of contacts generated',
+		OPPORTUNITIES.OPPORTUNITY_RECORD as 1 comment='Count of opportunities created',
+		OPPORTUNITIES.OPPORTUNITY_AMOUNT as revenue comment='Opportunity revenue in dollars'
 	)
 	dimensions (
 		CAMPAIGNS.CAMPAIGN_DATE as date with synonyms=('date','campaign date') comment='Date of the campaign activity',
@@ -581,21 +683,45 @@ create or replace semantic view SF_AI_DEMO.DEMO_SCHEMA.SALES_SEMANTIC_VIEW
 		CAMPAIGNS.CAMPAIGN_YEAR as YEAR(date) comment='Year of the campaign',
 		CAMPAIGNS.PRODUCT_KEY as product_key with synonyms=('product_id','product identifier') comment='Product identifier for campaign targeting',
 		CAMPAIGN_DETAILS.CAMPAIGN_NAME as campaign_name with synonyms=('campaign','campaign title') comment='Name of the marketing campaign',
-		CAMPAIGN_DETAILS.OBJECTIVE as 'campaign_objective' with synonyms=('objective','goal','purpose') comment='Campaign objective',
+		CAMPAIGN_DETAILS.OBJECTIVE as campaign_objective with synonyms=('objective','goal','purpose') comment='Campaign objective',
 		CHANNELS.CHANNEL_NAME as channel_name with synonyms=('channel','marketing channel') comment='Name of the marketing channel',
 		REGIONS.REGION_NAME as region_name with synonyms=('region','market','territory') comment='Name of the region',
 		PRODUCTS.PRODUCT_NAME as product_name with synonyms=('product','item','product title') comment='Name of the product being promoted',
-		PRODUCTS.PRODUCT_CATEGORY as category_name with synonyms=('category','product category') comment='Category of the product',
-		PRODUCTS.PRODUCT_VERTICAL as vertical with synonyms=('vertical','industry') comment='Business vertical of the product'
+		PRODUCTS.CATEGORY_NAME as product_category with synonyms=('category','product category') comment='Category of the product',
+		PRODUCTS.VERTICAL as product_vertical with synonyms=('vertical','industry') comment='Business vertical of the product',
+		CONTACTS.FIRST_NAME as contact_first_name with synonyms=('first name','contact name') comment='Contact first name',
+		CONTACTS.LAST_NAME as contact_last_name with synonyms=('last name','surname') comment='Contact last name',
+		CONTACTS.EMAIL as contact_email with synonyms=('email','email address') comment='Contact email address',
+		CONTACTS.TITLE as contact_title with synonyms=('job title','position') comment='Contact job title',
+		CONTACTS.DEPARTMENT as contact_department with synonyms=('department','business unit') comment='Contact department',
+		CONTACTS.LEAD_SOURCE as contact_lead_source with synonyms=('lead source','source') comment='How the contact was generated',
+		OPPORTUNITIES.OPPORTUNITY_NAME as opportunity_name with synonyms=('deal name','opportunity title') comment='Name of the sales opportunity',
+		OPPORTUNITIES.STAGE_NAME as opportunity_stage with synonyms=('stage','sales stage','pipeline stage') comment='Current stage of the opportunity',
+		OPPORTUNITIES.CLOSE_DATE as opportunity_close_date with synonyms=('close date','expected close') comment='Expected or actual close date',
+		OPPORTUNITIES.LEAD_SOURCE as opportunity_lead_source with synonyms=('opportunity source','deal source') comment='Source of the opportunity',
+		OPPORTUNITIES.TYPE as opportunity_type with synonyms=('deal type','opportunity type') comment='Type of opportunity',
+		ACCOUNTS.ACCOUNT_NAME as account_name with synonyms=('customer name','client name','company') comment='Name of the customer account',
+		ACCOUNTS.INDUSTRY as account_industry with synonyms=('industry','sector') comment='Customer industry',
+		ACCOUNTS.ACCOUNT_TYPE as account_type with synonyms=('customer type','account category') comment='Type of customer account',
+		ACCOUNTS.ANNUAL_REVENUE as account_annual_revenue with synonyms=('customer revenue','company revenue') comment='Customer annual revenue',
+		ACCOUNTS.EMPLOYEES as account_employees with synonyms=('company size','employee count') comment='Number of employees at customer'
 	)
 	metrics (
 		CAMPAIGNS.AVERAGE_SPEND as AVG(campaigns.spend) comment='Average campaign spend',
 		CAMPAIGNS.TOTAL_CAMPAIGNS as COUNT(campaigns.campaign_record) comment='Total number of campaign activities',
-		CAMPAIGNS.TOTAL_IMPRESSIONS as SUM(campaigns.impressions) comment='Total impressions',
-		CAMPAIGNS.TOTAL_LEADS as SUM(campaigns.leads_generated) comment='Total leads generated',
-		CAMPAIGNS.TOTAL_SPEND as SUM(campaigns.spend) comment='Total marketing spend'
+		CAMPAIGNS.TOTAL_IMPRESSIONS as SUM(campaigns.impressions) comment='Total impressions across campaigns',
+		CAMPAIGNS.TOTAL_LEADS as SUM(campaigns.leads_generated) comment='Total leads generated from campaigns',
+		CAMPAIGNS.TOTAL_SPEND as SUM(campaigns.spend) comment='Total marketing spend',
+		CONTACTS.TOTAL_CONTACTS as COUNT(contacts.contact_record) comment='Total contacts generated from campaigns',
+		OPPORTUNITIES.TOTAL_OPPORTUNITIES as COUNT(opportunities.opportunity_record) comment='Total opportunities from marketing',
+		OPPORTUNITIES.TOTAL_REVENUE as SUM(opportunities.opportunity_amount) comment='Total revenue from marketing-driven opportunities',
+		OPPORTUNITIES.AVERAGE_DEAL_SIZE as AVG(opportunities.opportunity_amount) comment='Average opportunity size from marketing',
+		OPPORTUNITIES.CLOSED_WON_REVENUE as SUM(CASE WHEN opportunities.stage_name = 'Closed Won' THEN opportunities.opportunity_amount ELSE 0 END) comment='Revenue from closed won opportunities',
+		CAMPAIGNS.MARKETING_ROI as (SUM(CASE WHEN opportunities.stage_name = 'Closed Won' THEN opportunities.opportunity_amount ELSE 0 END) / SUM(campaigns.spend)) comment='Marketing return on investment',
+		CAMPAIGNS.COST_PER_LEAD as (SUM(campaigns.spend) / COUNT(contacts.contact_record)) comment='Cost per lead generated',
+		CAMPAIGNS.LEAD_TO_OPPORTUNITY_RATE as (COUNT(opportunities.opportunity_record) / COUNT(contacts.contact_record)) comment='Conversion rate from leads to opportunities'
 	)
-	comment='Semantic view for marketing campaign analysis and ROI tracking with product-specific insights';
+	comment='Enhanced semantic view for marketing campaign analysis with complete revenue attribution and ROI tracking';
 
   -- ========================================================================
   -- HR SEMANTIC VIEW
