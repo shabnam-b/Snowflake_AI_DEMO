@@ -226,7 +226,7 @@ graph TD
    - Run `SHOW CORTEX SEARCH SERVICES;` to verify 4 search services
   
 4. **Run Demo**:
-   - Click in AI/ML category on the left menu & choose "Snowflake Intelligence" item
+   - Click in **AI/ML category** on the left menu & choose "**Snowflake Intelligence**" item
 
 
 
