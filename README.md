@@ -230,13 +230,15 @@ graph TD
    - Web scraping function with external access integration
    - 1 Snowflake Intelligence Agent with multi-tool capabilities
 
-3. **Post-Setup Verification**:
+3. **Post-Setup Verification(Optional)**:
    - Run `SHOW TABLES;` to verify 20 tables created (17 original + 3 Salesforce CRM)
    - Run `SHOW SEMANTIC VIEWS;` to verify 4 semantic views
    - Run `SHOW CORTEX SEARCH SERVICES;` to verify 4 search services
    - Run `SHOW FUNCTIONS LIKE 'WEB_SCRAPE';` to verify web scraping function
-   - Test agent: `SELECT SNOWFLAKE_INTELLIGENCE.AGENTS.COMPANY_CHATBOT_AGENT('What are our monthly sales for 2025?');`
-   - Test web scraping: `SELECT SNOWFLAKE_INTELLIGENCE.AGENTS.COMPANY_CHATBOT_AGENT('Analyze the content from https://snowflake.com/products/ and compare it to our product data');`
+4. **RUN DEMO**:
+   - Use AI/ML option on the left navigation bar
+   - Pick "Snowflake Intelligence"
+   - Make sure to pick the right agent at the bottom-left 
 
 
 
