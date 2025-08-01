@@ -908,14 +908,22 @@ where relative_path ilike 'unstructured_docs/%.pdf' ;
         );
 
 
+use role sf_intelligence_demo;
 
 
-
-
-
+  -- NETWORK rule is part of db schema
+CREATE OR REPLACE NETWORK RULE Snowflake_intelligence_WebAccessRule
+  MODE = EGRESS
+  TYPE = HOST_PORT
+  VALUE_LIST = ('0.0.0.0:80', '0.0.0.0:443');
 
 
 use role accountadmin;
+
+CREATE OR REPLACE EXTERNAL ACCESS INTEGRATION Snowflake_intelligence_ExternalAccess_Integration
+  ALLOWED_NETWORK_RULES = (Snowflake_intelligence_WebAccessRule)
+  ENABLED = true;
+
 
 
 GRANT USAGE ON DATABASE snowflake_intelligence TO ROLE SF_Intelligence_Demo;
@@ -925,133 +933,172 @@ GRANT CREATE AGENT ON SCHEMA snowflake_intelligence.agents TO ROLE SF_Intelligen
 use role SF_Intelligence_Demo;
 -- CREATES A SNOWFLAKE INTELLIGENCE AGENT WITH MULTIPLE TOOLS
 
+
+
+CREATE OR REPLACE FUNCTION Web_scrape(weburl STRING)
+RETURNS STRING
+LANGUAGE PYTHON
+RUNTIME_VERSION = 3.11
+HANDLER = 'get_page'
+EXTERNAL_ACCESS_INTEGRATIONS = (Snowflake_intelligence_ExternalAccess_Integration)
+PACKAGES = ('requests', 'beautifulsoup4')
+--SECRETS = ('cred' = oauth_token )
+AS
+$$
+import _snowflake
+import requests
+from bs4 import BeautifulSoup
+
+def get_page(weburl):
+  url = f"{weburl}"
+  response = requests.get(url)
+  soup = BeautifulSoup(response.text)
+  return soup.get_text()
+$$;
+
+
 CREATE OR REPLACE AGENT SNOWFLAKE_INTELLIGENCE.AGENTS.Company_Chatbot_Agent_Retail
-WITH PROFILE='{ "display_name": "Company Chatbot Agent - Retail" }'
+WITH PROFILE='{ "display_name": "1-Company Chatbot Agent - Retail" }'
     COMMENT=$$ This is an agent that can answer questions about company specific Sales, Marketing, HR & Finance questions. $$
 FROM SPECIFICATION $$
 {
-    "models": { "orchestration": "auto" },
-    "instructions": {
-        "response": "You are a data analyst who has access to sales, finance, marketing & HR datamarts.  If user does not specify a date range assume it for year 2025. Leverage data from all domains to analyse & answer user questions. Provide visualizations if possible. Trendlines should default to linecharts, Categories Barchart.",
-        
-        "orchestration": "Use cortex search for known entities and pass the results to cortex analyst for detailed analysis. 
-        
-                        If answering sales related question from datamart, Always make sure to include the product_dim table & filter product VERTICAL by 'Retail' for all questions but don't show this fact while explaining thinking steps.",
-        
-        "sample_questions": [
-            { "question": "What are our monthly sales last 12 months?" }
-        ]
+  "models": {
+    "orchestration": ""
+  },
+  "instructions": {
+    "response": "You are a data analyst who has access to sales, finance, marketing & HR datamarts.  If user does not specify a date range assume it for year 2025. Leverage data from all domains to analyse & answer user questions. Provide visualizations if possible. Trendlines should default to linecharts, Categories Barchart.",
+    "orchestration": "Use cortex search for known entities and pass the results to cortex analyst for detailed analysis.\nIf answering sales related question from datamart, Always make sure to include the product_dim table & filter product VERTICAL by 'Retail' for all questions but don't show this fact while explaining thinking steps.\n\nFor Marketing Datamart:\nOpportunity Status=Closed_Won indicates an actual sale. \nSalesID in marketing datamart links an opportunity to a Sales record in Sales Datamart SalesID columns\n\n\n",
+    "sample_questions": [
+      {
+        "question": "What are our monthly sales last 12 months?"
+      }
+    ]
+  },
+  "tools": [
+    {
+      "tool_spec": {
+        "type": "cortex_analyst_text_to_sql",
+        "name": "Query Finance Datamart",
+        "description": "Allows users to query finance data for a company in terms of revenue & expenses."
+      }
     },
-    "tools": [
-        {
-            "tool_spec": {
-            "name": "Search Internal Documents: Finance",
-            "type": "cortex_search"
+    {
+      "tool_spec": {
+        "type": "cortex_analyst_text_to_sql",
+        "name": "Query Sales Datamart",
+        "description": "Allows users to query Sales data for a company in terms of Sales data such as products, sales reps & etc. "
+      }
+    },
+    {
+      "tool_spec": {
+        "type": "cortex_analyst_text_to_sql",
+        "name": "Query HR Datamart",
+        "description": "Allows users to query HR data for a company in terms of HR related employee data. employee_name column also contains names of sales_reps."
+      }
+    },
+    {
+      "tool_spec": {
+        "type": "cortex_analyst_text_to_sql",
+        "name": "Query Marketing Datamart",
+        "description": "Allows users to query Marketing data in terms of campaigns, channels, impressions, spend & etc."
+      }
+    },
+    {
+      "tool_spec": {
+        "type": "cortex_search",
+        "name": "Search Internal Documents: Finance",
+        "description": ""
+      }
+    },
+    {
+      "tool_spec": {
+        "type": "cortex_search",
+        "name": "Search Internal Documents: HR",
+        "description": ""
+      }
+    },
+    {
+      "tool_spec": {
+        "type": "cortex_search",
+        "name": "Search Internal Documents: Sales",
+        "description": ""
+      }
+    },
+    {
+      "tool_spec": {
+        "type": "cortex_search",
+        "name": "Search Internal Documents: Marketing",
+        "description": ""
+      }
+    },
+    {
+      "tool_spec": {
+        "type": "generic",
+        "name": "Web_scraper",
+        "description": "This tool should be used if the user wants to analyse contents of a given web page. This tool will use a web url (https or https) as input and will return the text content of that web page for further analysis",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "weburl": {
+              "description": "Agent should ask web url ( that includes http:// or https:// ). It will scrape text from the given url and return as a result.",
+              "type": "string"
             }
-        },
-
-        {
-            "tool_spec": {
-            "name": "Search Internal Documents: HR",
-            "type": "cortex_search"
-            }
-        },
-
-        {
-            "tool_spec": {
-            "name": "Search Internal Documents: Sales",
-            "type": "cortex_search"
-            }
-        },
-
-        {
-            "tool_spec": {
-            "name": "Search Internal Documents: Marketing",
-            "type": "cortex_search"
-            }
-        },
-        
-        {
-            "tool_spec": {
-            "description": "Allows users to query finance data for a company in terms of revenue & expenses.",
-            "name": "Query Finance Datamart",
-            "type": "cortex_analyst_text_to_sql"
-        
-            }
-        },
-        
-        {
-            "tool_spec": {
-            "description": "Allows users to query Sales data for a company in terms of Sales data such as products, sales reps & etc. ",
-            "name": "Query Sales Datamart",
-            "type": "cortex_analyst_text_to_sql"
-            }
-        },
-        
-        {
-            "tool_spec": {
-            "description": "Allows users to query HR data for a company in terms of HR related employee data. 
-                            employee_name column also contains names of sales_reps.",
-            "name": "Query HR Datamart",
-            "type": "cortex_analyst_text_to_sql"
-            }
-        },
-        
-        {
-            "tool_spec": {
-            "description": "Allows users to query Marketing data in terms of campaigns, channels, impressions, spend & etc.",
-            "name": "Query Marketing Datamart",
-            "type": "cortex_analyst_text_to_sql"
-            }
+          },
+          "required": [
+            "weburl"
+          ]
         }
-    ],
-    "tool_resources": {
-        "Search Internal Documents: Finance": {
-            "id_column": "FILE_URL",
-            "title_column": "TITLE",
-            "max_results": 5,
-            "name": "SF_AI_DEMO.DEMO_SCHEMA.SEARCH_FINANCE_DOCS"
-        },
-
-        "Search Internal Documents: HR": {
-            "id_column": "FILE_URL",
-            "title_column": "TITLE",
-            "max_results": 5,
-            "name": "SF_AI_DEMO.DEMO_SCHEMA.SEARCH_HR_DOCS"
-        },
-
-        "Search Internal Documents: Marketing": {
-            "id_column": "FILE_URL",
-            "title_column": "TITLE",
-            "max_results": 5,
-            "name": "SF_AI_DEMO.DEMO_SCHEMA.SEARCH_MARKETING_DOCS"
-        },
-
-        "Search Internal Documents: Sales": {
-            "id_column": "FILE_URL",
-            "title_column": "TITLE",
-            "max_results": 5,
-            "name": "SF_AI_DEMO.DEMO_SCHEMA.SEARCH_SALES_DOCS"
-        },
-
-
-        
-        "Query Finance Datamart": {
-            "semantic_view": "SF_AI_DEMO.DEMO_SCHEMA.FINANCE_SEMANTIC_VIEW"
-        },
-        
-        "Query Sales Datamart": {
-            "semantic_view": "SF_AI_DEMO.DEMO_SCHEMA.SALES_SEMANTIC_VIEW"
-        },
-        
-        "Query HR Datamart": {
-            "semantic_view": "SF_AI_DEMO.DEMO_SCHEMA.HR_SEMANTIC_VIEW"
-        },
-        
-        "Query Marketing Datamart": {
-            "semantic_view": "SF_AI_DEMO.DEMO_SCHEMA.MARKETING_SEMANTIC_VIEW"
-        }
-        }
+      }
+    }
+  ],
+  "tool_resources": {
+    "Query Finance Datamart": {
+      "semantic_view": "SF_AI_DEMO.DEMO_SCHEMA.FINANCE_SEMANTIC_VIEW"
+    },
+    "Query HR Datamart": {
+      "semantic_view": "SF_AI_DEMO.DEMO_SCHEMA.HR_SEMANTIC_VIEW"
+    },
+    "Query Marketing Datamart": {
+      "semantic_view": "SF_AI_DEMO.DEMO_SCHEMA.MARKETING_SEMANTIC_VIEW"
+    },
+    "Query Sales Datamart": {
+      "semantic_view": "SF_AI_DEMO.DEMO_SCHEMA.SALES_SEMANTIC_VIEW"
+    },
+    "Search Internal Documents: Finance": {
+      "id_column": "FILE_URL",
+      "max_results": 5,
+      "name": "SF_AI_DEMO.DEMO_SCHEMA.SEARCH_FINANCE_DOCS",
+      "title_column": "TITLE"
+    },
+    "Search Internal Documents: HR": {
+      "id_column": "FILE_URL",
+      "max_results": 5,
+      "name": "SF_AI_DEMO.DEMO_SCHEMA.SEARCH_HR_DOCS",
+      "title_column": "TITLE"
+    },
+    "Search Internal Documents: Marketing": {
+      "id_column": "FILE_URL",
+      "max_results": 5,
+      "name": "SF_AI_DEMO.DEMO_SCHEMA.SEARCH_MARKETING_DOCS",
+      "title_column": "TITLE"
+    },
+    "Search Internal Documents: Sales": {
+      "id_column": "FILE_URL",
+      "max_results": 5,
+      "name": "SF_AI_DEMO.DEMO_SCHEMA.SEARCH_SALES_DOCS",
+      "title_column": "TITLE"
+    },
+    "Web_scraper": {
+      "execution_environment": {
+        "query_timeout": 0,
+        "type": "warehouse",
+        "warehouse": "SNOW_INTELLIGENCE_DEMO_WH"
+      },
+      "identifier": "SF_AI_DEMO.DEMO_SCHEMA.WEB_SCRAPE",
+      "name": "WEB_SCRAPE(VARCHAR)",
+      "type": "function"
+    }
+  }
 }
 $$;
 
