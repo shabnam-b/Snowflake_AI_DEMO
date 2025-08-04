@@ -933,7 +933,59 @@ GRANT CREATE AGENT ON SCHEMA snowflake_intelligence.agents TO ROLE SF_Intelligen
 use role SF_Intelligence_Demo;
 -- CREATES A SNOWFLAKE INTELLIGENCE AGENT WITH MULTIPLE TOOLS
 
+-- Create stored procedure to generate presigned URLs for files in internal stages
+CREATE OR REPLACE PROCEDURE Get_File_Presigned_URL_SP(
+    RELATIVE_FILE_PATH STRING, 
+    EXPIRATION_MINS INTEGER DEFAULT 60
+)
+RETURNS STRING
+LANGUAGE SQL
+COMMENT = 'Generates a presigned URL for a file in the static @INTERNAL_DATA_STAGE. Input is the relative file path.'
+EXECUTE AS CALLER
+AS
+$$
+DECLARE
+    presigned_url STRING;
+    sql_stmt STRING;
+    expiration_seconds INTEGER;
+    stage_name STRING DEFAULT '@SF_AI_DEMO.DEMO_SCHEMA.INTERNAL_DATA_STAGE';
+BEGIN
+    expiration_seconds := EXPIRATION_MINS * 60;
 
+    sql_stmt := 'SELECT GET_PRESIGNED_URL(' || stage_name || ', ' || '''' || RELATIVE_FILE_PATH || '''' || ', ' || expiration_seconds || ') AS url';
+    
+    EXECUTE IMMEDIATE :sql_stmt;
+    
+    
+    SELECT "URL"
+    INTO :presigned_url
+    FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()));
+    
+    RETURN :presigned_url;
+END;
+$$;
+
+-- Create stored procedure to send emails to verified recipients in Snowflake
+
+CREATE OR REPLACE PROCEDURE send_mail(recipient TEXT, subject TEXT, text TEXT)
+RETURNS TEXT
+LANGUAGE PYTHON
+RUNTIME_VERSION = '3.11'
+PACKAGES = ('snowflake-snowpark-python')
+HANDLER = 'send_mail'
+AS
+$$
+def send_mail(session, recipient, subject, text):
+    session.call(
+        'SYSTEM$SEND_EMAIL',
+        'ai_email_int',
+        recipient,
+        subject,
+        text,
+        'text/html'
+    )
+    return f'Email was sent to {recipient} with subject: "{subject}".'
+$$;
 
 CREATE OR REPLACE FUNCTION Web_scrape(weburl STRING)
 RETURNS STRING
@@ -1028,7 +1080,7 @@ FROM SPECIFICATION $$
       "tool_spec": {
         "type": "cortex_search",
         "name": "Search Internal Documents: Marketing",
-        "description": ""
+        "description": "This tools should be used to search unstructured docs related to marketing department.\n\nAny reference docs in ID columns should be passed to Dynamic URL tool to generate a downloadable URL for users in the response"
       }
     },
     {
@@ -1049,9 +1101,72 @@ FROM SPECIFICATION $$
           ]
         }
       }
+    },
+    {
+      "tool_spec": {
+        "type": "generic",
+        "name": "Send_Emails",
+        "description": "This tool is used to send emails to a email recipient. It can take an email, subject & content as input to send the email. Always use HTML formatted content for the emails.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "recipient": {
+              "description": "recipient of email",
+              "type": "string"
+            },
+            "subject": {
+              "description": "subject of email",
+              "type": "string"
+            },
+            "text": {
+              "description": "content of email",
+              "type": "string"
+            }
+          },
+          "required": [
+            "text",
+            "recipient",
+            "subject"
+          ]
+        }
+      }
+    },
+    {
+      "tool_spec": {
+        "type": "generic",
+        "name": "Dynamic_Doc_URL_Tool",
+        "description": "This tools uses the ID Column coming from Cortex Search tools for reference docs and returns a temp URL for users to view & download the docs.\n\nReturned URL should be presented as a HTML Hyperlink where doc title should be the text and out of this tool should be the url.\n\nURL format for PDF docs that are are like this which has no PDF in the url. Create the Hyperlink format so the PDF doc opens up in a browser instead of downloading the file.\nhttps://domain/path/unique_guid",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "expiration_mins": {
+              "description": "default should be 5",
+              "type": "number"
+            },
+            "relative_file_path": {
+              "description": "This is the ID Column value Coming from Cortex Search tool.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "expiration_mins",
+            "relative_file_path"
+          ]
+        }
+      }
     }
   ],
   "tool_resources": {
+    "Dynamic_Doc_URL_Tool": {
+      "execution_environment": {
+        "query_timeout": 0,
+        "type": "warehouse",
+        "warehouse": "SNOW_INTELLIGENCE_DEMO_WH"
+      },
+      "identifier": "SF_AI_DEMO.DEMO_SCHEMA.GET_FILE_PRESIGNED_URL_SP",
+      "name": "GET_FILE_PRESIGNED_URL_SP(VARCHAR, DEFAULT NUMBER)",
+      "type": "procedure"
+    },
     "Query Finance Datamart": {
       "semantic_view": "SF_AI_DEMO.DEMO_SCHEMA.FINANCE_SEMANTIC_VIEW"
     },
@@ -1077,7 +1192,7 @@ FROM SPECIFICATION $$
       "title_column": "TITLE"
     },
     "Search Internal Documents: Marketing": {
-      "id_column": "FILE_URL",
+      "id_column": "RELATIVE_PATH",
       "max_results": 5,
       "name": "SF_AI_DEMO.DEMO_SCHEMA.SEARCH_MARKETING_DOCS",
       "title_column": "TITLE"
@@ -1087,6 +1202,16 @@ FROM SPECIFICATION $$
       "max_results": 5,
       "name": "SF_AI_DEMO.DEMO_SCHEMA.SEARCH_SALES_DOCS",
       "title_column": "TITLE"
+    },
+    "Send_Emails": {
+      "execution_environment": {
+        "query_timeout": 0,
+        "type": "warehouse",
+        "warehouse": "SNOW_INTELLIGENCE_DEMO_WH"
+      },
+      "identifier": "SF_AI_DEMO.DEMO_SCHEMA.SEND_MAIL",
+      "name": "SEND_MAIL(VARCHAR, VARCHAR, VARCHAR)",
+      "type": "procedure"
     },
     "Web_scraper": {
       "execution_environment": {
