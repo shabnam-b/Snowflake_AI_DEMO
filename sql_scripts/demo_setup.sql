@@ -924,6 +924,11 @@ CREATE OR REPLACE EXTERNAL ACCESS INTEGRATION Snowflake_intelligence_ExternalAcc
   ALLOWED_NETWORK_RULES = (Snowflake_intelligence_WebAccessRule)
   ENABLED = true;
 
+CREATE NOTIFICATION INTEGRATION ai_email_int
+  TYPE=EMAIL
+  ENABLED=TRUE;
+
+GRANT USAGE ON INTEGRATION ai_email_int TO ROLE sf_intelligence_demo;
 
 
 GRANT USAGE ON DATABASE snowflake_intelligence TO ROLE SF_Intelligence_Demo;
@@ -1226,4 +1231,3 @@ FROM SPECIFICATION $$
   }
 }
 $$;
-
