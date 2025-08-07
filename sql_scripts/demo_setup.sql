@@ -45,7 +45,7 @@
     ALTER USER IDENTIFIER($current_user_name) SET DEFAULT_WAREHOUSE = Snow_Intelligence_demo_wh;
     
 
-    -- Switch to accuntadmin role to create demo objects
+    -- Switch to SF_Intelligence_Demo role to create demo objects
     use role SF_Intelligence_Demo;
    
     -- Create database and schema
