@@ -582,64 +582,63 @@ use role SF_Intelligence_Demo;
   -- ========================================================================
 
 create or replace semantic view SF_AI_DEMO.DEMO_SCHEMA.SALES_SEMANTIC_VIEW
-    tables (
-        CUSTOMERS as CUSTOMER_DIM primary key (CUSTOMER_KEY) with synonyms=('clients','customers','accounts') comment='Customer information for sales analysis',
-        PRODUCTS as PRODUCT_DIM primary key (PRODUCT_KEY) with synonyms=('products','items','SKUs') comment='Product catalog for sales analysis',
-        REGIONS as REGION_DIM primary key (REGION_KEY) with synonyms=('territories','regions','areas') comment='Regional information for territory analysis',
-        SALES as SALES_FACT primary key (SALE_ID) with synonyms=('sales transactions','sales data') comment='All sales transactions and deals',
-        SALES_REPS as SALES_REP_DIM primary key (SALES_REP_KEY) with synonyms=('sales representatives','reps','salespeople') comment='Sales representative information',
-        VENDORS as VENDOR_DIM primary key (VENDOR_KEY) with synonyms=('suppliers','vendors') comment='Vendor information for supply chain analysis',
-        PRODUCT_CATEGORY_DIM primary key (CATEGORY_KEY)
-    )
-    relationships (
-        PRODUCT_TO_CATEGORY as PRODUCTS(CATEGORY_KEY) references PRODUCT_CATEGORY_DIM(CATEGORY_KEY),
-        SALES_TO_CUSTOMERS as SALES(CUSTOMER_KEY) references CUSTOMERS(CUSTOMER_KEY),
-        SALES_TO_PRODUCTS as SALES(PRODUCT_KEY) references PRODUCTS(PRODUCT_KEY),
-        SALES_TO_REGIONS as SALES(REGION_KEY) references REGIONS(REGION_KEY),
-        SALES_TO_REPS as SALES(SALES_REP_KEY) references SALES_REPS(SALES_REP_KEY),
-        SALES_TO_VENDORS as SALES(VENDOR_KEY) references VENDORS(VENDOR_KEY)
-    )
-    facts (
-        SALES.SALE_AMOUNT as amount comment='Sale amount in dollars',
-        SALES.SALE_RECORD as 1 comment='Count of sales transactions',
-        SALES.UNITS_SOLD as units comment='Number of units sold'
-    )
-    dimensions (
-        CUSTOMERS.CUSTOMER_KEY as CUSTOMER_KEY,
-        CUSTOMERS.CUSTOMER_NAME as customer_name with synonyms=('customer','client','account') comment='Name of the customer',
-        CUSTOMERS.INDUSTRY as 'customer_industry' with synonyms=('industry','customer type') comment='Customer industry',
-        PRODUCTS.CATEGORY_KEY as CATEGORY_KEY with synonyms=('category_id','product_category','category_code','classification_key','group_key','product_group_id') comment='Unique identifier for the product category.',
-        PRODUCTS.PRODUCT_KEY as PRODUCT_KEY,
-        PRODUCTS.PRODUCT_NAME as product_name with synonyms=('product','item') comment='Name of the product',
-        REGIONS.REGION_KEY as REGION_KEY,
-        REGIONS.REGION_NAME as region_name with synonyms=('region','territory','area') comment='Name of the region',
-        SALES.CUSTOMER_KEY as CUSTOMER_KEY,
-        SALES.PRODUCT_KEY as PRODUCT_KEY,
-        SALES.REGION_KEY as REGION_KEY,
-        SALES.SALES_REP_KEY as SALES_REP_KEY,
-        SALES.SALE_DATE as date with synonyms=('date','sale date','transaction date') comment='Date of the sale',
-        SALES.SALE_ID as SALE_ID,
-        SALES.SALE_MONTH as MONTH(date) comment='Month of the sale',
-        SALES.SALE_YEAR as YEAR(date) comment='Year of the sale',
-        SALES.VENDOR_KEY as VENDOR_KEY,
-        SALES_REPS.SALES_REP_KEY as SALES_REP_KEY,
-        SALES_REPS.SALES_REP_NAME as REP_NAME with synonyms=('sales rep','representative','salesperson') comment='Name of the sales representative',
-        VENDORS.VENDOR_KEY as VENDOR_KEY,
-        VENDORS.VENDOR_NAME as vendor_name with synonyms=('vendor','supplier','provider') comment='Name of the vendor',
-        PRODUCT_CATEGORY_DIM.CATEGORY_KEY as CATEGORY_KEY with synonyms=('category_id','category_code','product_category_number','category_identifier','classification_key') comment='Unique identifier for a product category.',
-        PRODUCT_CATEGORY_DIM.CATEGORY_NAME as CATEGORY_NAME with synonyms=('category_title','product_group','classification_name','category_label','product_category_description') comment='The category to which a product belongs, such as electronics, clothing, or software as a service.',
-        PRODUCT_CATEGORY_DIM.VERTICAL as VERTICAL with synonyms=('industry','sector','market','category_group','business_area','domain') comment='The industry or sector in which a product is categorized, such as retail, technology, or manufacturing.'
-    )
-    metrics (
-        SALES.AVERAGE_DEAL_SIZE as AVG(sales.amount) comment='Average deal size',
-        SALES.AVERAGE_UNITS_PER_SALE as AVG(sales.units) comment='Average units per sale',
-        SALES.TOTAL_DEALS as COUNT(sales.sale_record) comment='Total number of deals',
-        SALES.TOTAL_REVENUE as SUM(sales.amount) comment='Total sales revenue',
-        SALES.TOTAL_UNITS as SUM(sales.units) comment='Total units sold'
-    )
-    comment='Semantic view for sales analysis and performance tracking'
-    with extension (CA='{"tables":[{"name":"CUSTOMERS","dimensions":[{"name":"CUSTOMER_KEY"},{"name":"CUSTOMER_NAME"},{"name":"INDUSTRY"}]},{"name":"PRODUCTS","dimensions":[{"name":"PRODUCT_KEY"},{"name":"PRODUCT_NAME"},{"name":"CATEGORY_KEY","unique":false}]},{"name":"REGIONS","dimensions":[{"name":"REGION_KEY"},{"name":"REGION_NAME"}]},{"name":"SALES","dimensions":[{"name":"CUSTOMER_KEY"},{"name":"PRODUCT_KEY"},{"name":"REGION_KEY"},{"name":"SALES_REP_KEY"},{"name":"SALE_DATE"},{"name":"SALE_ID"},{"name":"SALE_MONTH"},{"name":"SALE_YEAR"},{"name":"VENDOR_KEY"}],"facts":[{"name":"SALE_AMOUNT"},{"name":"SALE_RECORD"},{"name":"UNITS_SOLD"}],"metrics":[{"name":"AVERAGE_DEAL_SIZE"},{"name":"AVERAGE_UNITS_PER_SALE"},{"name":"TOTAL_DEALS"},{"name":"TOTAL_REVENUE"},{"name":"TOTAL_UNITS"}]},{"name":"SALES_REPS","dimensions":[{"name":"SALES_REP_KEY"},{"name":"SALES_REP_NAME"}]},{"name":"VENDORS","dimensions":[{"name":"VENDOR_KEY"},{"name":"VENDOR_NAME"}]},{"name":"PRODUCT_CATEGORY_DIM","dimensions":[{"name":"CATEGORY_NAME","sample_values":["Electronics","Apparel","SaaS"]},{"name":"VERTICAL","sample_values":["Retail","Tech","Manufacturing"]},{"name":"CATEGORY_KEY","sample_values":["1","2","3"]}]}],"relationships":[{"name":"SALES_TO_CUSTOMERS","relationship_type":"many_to_one"},{"name":"SALES_TO_PRODUCTS","relationship_type":"many_to_one"},{"name":"SALES_TO_REGIONS","relationship_type":"many_to_one"},{"name":"SALES_TO_REPS","relationship_type":"many_to_one"},{"name":"SALES_TO_VENDORS","relationship_type":"many_to_one"},{"name":"PRODUCT_TO_CATEGORY"}]}');
-
+	tables (
+		CUSTOMERS as CUSTOMER_DIM primary key (CUSTOMER_KEY) with synonyms=('clients','customers','accounts') comment='Customer information for sales analysis',
+		PRODUCTS as PRODUCT_DIM primary key (PRODUCT_KEY) with synonyms=('products','items','SKUs') comment='Product catalog for sales analysis',
+		PRODUCT_CATEGORY_DIM primary key (CATEGORY_KEY),
+		REGIONS as REGION_DIM primary key (REGION_KEY) with synonyms=('territories','regions','areas') comment='Regional information for territory analysis',
+		SALES as SALES_FACT primary key (SALE_ID) with synonyms=('sales transactions','sales data') comment='All sales transactions and deals',
+		SALES_REPS as SALES_REP_DIM primary key (SALES_REP_KEY) with synonyms=('sales representatives','reps','salespeople') comment='Sales representative information',
+		VENDORS as VENDOR_DIM primary key (VENDOR_KEY) with synonyms=('suppliers','vendors') comment='Vendor information for supply chain analysis'
+	)
+	relationships (
+		PRODUCT_TO_CATEGORY as PRODUCTS(CATEGORY_KEY) references PRODUCT_CATEGORY_DIM(CATEGORY_KEY),
+		SALES_TO_CUSTOMERS as SALES(CUSTOMER_KEY) references CUSTOMERS(CUSTOMER_KEY),
+		SALES_TO_PRODUCTS as SALES(PRODUCT_KEY) references PRODUCTS(PRODUCT_KEY),
+		SALES_TO_REGIONS as SALES(REGION_KEY) references REGIONS(REGION_KEY),
+		SALES_TO_REPS as SALES(SALES_REP_KEY) references SALES_REPS(SALES_REP_KEY),
+		SALES_TO_VENDORS as SALES(VENDOR_KEY) references VENDORS(VENDOR_KEY)
+	)
+	facts (
+		SALES.SALE_AMOUNT as amount comment='Sale amount in dollars',
+		SALES.SALE_RECORD as 1 comment='Count of sales transactions',
+		SALES.UNITS_SOLD as units comment='Number of units sold'
+	)
+	dimensions (
+		CUSTOMERS.CUSTOMER_INDUSTRY as INDUSTRY with synonyms=('industry','customer type') comment='Customer industry',
+		CUSTOMERS.CUSTOMER_KEY as CUSTOMER_KEY,
+		CUSTOMERS.CUSTOMER_NAME as customer_name with synonyms=('customer','client','account') comment='Name of the customer',
+		PRODUCTS.CATEGORY_KEY as CATEGORY_KEY with synonyms=('category_id','product_category','category_code','classification_key','group_key','product_group_id') comment='Unique identifier for the product category.',
+		PRODUCTS.PRODUCT_KEY as PRODUCT_KEY,
+		PRODUCTS.PRODUCT_NAME as product_name with synonyms=('product','item') comment='Name of the product',
+		PRODUCT_CATEGORY_DIM.CATEGORY_KEY as CATEGORY_KEY with synonyms=('category_id','category_code','product_category_number','category_identifier','classification_key') comment='Unique identifier for a product category.',
+		PRODUCT_CATEGORY_DIM.CATEGORY_NAME as CATEGORY_NAME with synonyms=('category_title','product_group','classification_name','category_label','product_category_description') comment='The category to which a product belongs, such as electronics, clothing, or software as a service.',
+		PRODUCT_CATEGORY_DIM.VERTICAL as VERTICAL with synonyms=('industry','sector','market','category_group','business_area','domain') comment='The industry or sector in which a product is categorized, such as retail, technology, or manufacturing.',
+		REGIONS.REGION_KEY as REGION_KEY,
+		REGIONS.REGION_NAME as region_name with synonyms=('region','territory','area') comment='Name of the region',
+		SALES.CUSTOMER_KEY as CUSTOMER_KEY,
+		SALES.PRODUCT_KEY as PRODUCT_KEY,
+		SALES.REGION_KEY as REGION_KEY,
+		SALES.SALES_REP_KEY as SALES_REP_KEY,
+		SALES.SALE_DATE as date with synonyms=('date','sale date','transaction date') comment='Date of the sale',
+		SALES.SALE_ID as SALE_ID,
+		SALES.SALE_MONTH as MONTH(date) comment='Month of the sale',
+		SALES.SALE_YEAR as YEAR(date) comment='Year of the sale',
+		SALES.VENDOR_KEY as VENDOR_KEY,
+		SALES_REPS.SALES_REP_KEY as SALES_REP_KEY,
+		SALES_REPS.SALES_REP_NAME as REP_NAME with synonyms=('sales rep','representative','salesperson') comment='Name of the sales representative',
+		VENDORS.VENDOR_KEY as VENDOR_KEY,
+		VENDORS.VENDOR_NAME as vendor_name with synonyms=('vendor','supplier','provider') comment='Name of the vendor'
+	)
+	metrics (
+		SALES.AVERAGE_DEAL_SIZE as AVG(sales.amount) comment='Average deal size',
+		SALES.AVERAGE_UNITS_PER_SALE as AVG(sales.units) comment='Average units per sale',
+		SALES.TOTAL_DEALS as COUNT(sales.sale_record) comment='Total number of deals',
+		SALES.TOTAL_REVENUE as SUM(sales.amount) comment='Total sales revenue',
+		SALES.TOTAL_UNITS as SUM(sales.units) comment='Total units sold'
+	)
+	comment='Semantic view for sales analysis and performance tracking'
+	with extension (CA='{"tables":[{"name":"CUSTOMERS","dimensions":[{"name":"CUSTOMER_KEY"},{"name":"CUSTOMER_NAME","sample_values":["Bailey and Sons","Oliver Ltd","Santos-Edwards"]},{"name":"Customer_Industry","sample_values":["Retailer","Tech","Manufacturing"]}]},{"name":"PRODUCTS","dimensions":[{"name":"CATEGORY_KEY","unique":false},{"name":"PRODUCT_KEY"},{"name":"PRODUCT_NAME","sample_values":["Obrien-Williams Storage","Miller, Smith and Ford Switch","Tran Group Conveyor"]}]},{"name":"PRODUCT_CATEGORY_DIM","dimensions":[{"name":"CATEGORY_KEY","sample_values":["1","2","3"]},{"name":"CATEGORY_NAME","sample_values":["Electronics","Apparel","SaaS"]},{"name":"VERTICAL","sample_values":["Retail","Tech","Manufacturing"]}]},{"name":"REGIONS","dimensions":[{"name":"REGION_KEY"},{"name":"REGION_NAME","sample_values":["North","South","West"]}]},{"name":"SALES","dimensions":[{"name":"CUSTOMER_KEY"},{"name":"PRODUCT_KEY"},{"name":"REGION_KEY"},{"name":"SALES_REP_KEY"},{"name":"SALE_DATE","sample_values":["2022-01-01","2022-01-02","2022-01-03"]},{"name":"SALE_ID"},{"name":"SALE_MONTH"},{"name":"SALE_YEAR"},{"name":"VENDOR_KEY"}],"facts":[{"name":"SALE_AMOUNT"},{"name":"SALE_RECORD"},{"name":"UNITS_SOLD"}],"metrics":[{"name":"AVERAGE_DEAL_SIZE"},{"name":"AVERAGE_UNITS_PER_SALE"},{"name":"TOTAL_DEALS"},{"name":"TOTAL_REVENUE"},{"name":"TOTAL_UNITS"}]},{"name":"SALES_REPS","dimensions":[{"name":"SALES_REP_KEY"},{"name":"SALES_REP_NAME","sample_values":["Grant Frey","Elizabeth George","Olivia Mcdaniel"]}]},{"name":"VENDORS","dimensions":[{"name":"VENDOR_KEY"},{"name":"VENDOR_NAME","sample_values":["Sullivan and Sons","Smith, Sandoval and Parker","Moore, French and Moore"]}]}],"relationships":[{"name":"PRODUCT_TO_CATEGORY"},{"name":"SALES_TO_CUSTOMERS","relationship_type":"many_to_one"},{"name":"SALES_TO_PRODUCTS","relationship_type":"many_to_one"},{"name":"SALES_TO_REGIONS","relationship_type":"many_to_one"},{"name":"SALES_TO_REPS","relationship_type":"many_to_one"},{"name":"SALES_TO_VENDORS","relationship_type":"many_to_one"}]}');
 
 
 -- ========================================================================
@@ -743,54 +742,53 @@ create or replace semantic view SF_AI_DEMO.DEMO_SCHEMA.MARKETING_SEMANTIC_VIEW
   -- HR SEMANTIC VIEW
   -- ========================================================================
 create or replace semantic view SF_AI_DEMO.DEMO_SCHEMA.HR_SEMANTIC_VIEW
-    tables (
-        DEPARTMENTS as DEPARTMENT_DIM primary key (DEPARTMENT_KEY) with synonyms=('departments','business units') comment='Department dimension for organizational analysis',
-        EMPLOYEES as EMPLOYEE_DIM primary key (EMPLOYEE_KEY) with synonyms=('employees','staff','workforce') comment='Employee dimension with personal information',
-        HR_RECORDS as HR_EMPLOYEE_FACT primary key (HR_FACT_ID) with synonyms=('hr data','employee records') comment='HR employee fact data for workforce analysis',
-        JOBS as JOB_DIM primary key (JOB_KEY) with synonyms=('job titles','positions','roles') comment='Job dimension with titles and levels',
-        LOCATIONS as LOCATION_DIM primary key (LOCATION_KEY) with synonyms=('locations','offices','sites') comment='Location dimension for geographic analysis'
-    )
-    relationships (
-        HR_TO_DEPARTMENTS as HR_RECORDS(DEPARTMENT_KEY) references DEPARTMENTS(DEPARTMENT_KEY),
-        HR_TO_EMPLOYEES as HR_RECORDS(EMPLOYEE_KEY) references EMPLOYEES(EMPLOYEE_KEY),
-        HR_TO_JOBS as HR_RECORDS(JOB_KEY) references JOBS(JOB_KEY),
-        HR_TO_LOCATIONS as HR_RECORDS(LOCATION_KEY) references LOCATIONS(LOCATION_KEY)
-    )
-    facts (
-        HR_RECORDS.ATTRITION_FLAG as attrition_flag with synonyms=('turnover_indicator','employee_departure_flag','separation_flag','employee_retention_status','churn_status','employee_exit_indicator') comment='Attrition flag. value is 0 if employee is currently active. 1 if employee quit & left the company. Always filter by 0 to show active employees unless specified otherwise',
-        HR_RECORDS.EMPLOYEE_RECORD as 1 comment='Count of employee records',
-        HR_RECORDS.EMPLOYEE_SALARY as salary comment='Employee salary in dollars'
-    )
-    dimensions (
-        DEPARTMENTS.DEPARTMENT_KEY as DEPARTMENT_KEY,
-        DEPARTMENTS.DEPARTMENT_NAME as department_name with synonyms=('department','business unit','division') comment='Name of the department',
-        EMPLOYEES.EMPLOYEE_KEY as EMPLOYEE_KEY,
-        EMPLOYEES.EMPLOYEE_NAME as employee_name with synonyms=('employee','staff member','person','sales rep','manager','director','executive') comment='Name of the employee',
-        EMPLOYEES.GENDER as gender with synonyms=('gender','sex') comment='Employee gender',
-        EMPLOYEES.HIRE_DATE as hire_date with synonyms=('hire date','start date') comment='Date when employee was hired',
-        HR_RECORDS.DEPARTMENT_KEY as DEPARTMENT_KEY,
-        HR_RECORDS.EMPLOYEE_KEY as EMPLOYEE_KEY,
-        HR_RECORDS.HR_FACT_ID as HR_FACT_ID,
-        HR_RECORDS.JOB_KEY as JOB_KEY,
-        HR_RECORDS.LOCATION_KEY as LOCATION_KEY,
-        HR_RECORDS.RECORD_DATE as date with synonyms=('date','record date') comment='Date of the HR record',
-        HR_RECORDS.RECORD_MONTH as MONTH(date) comment='Month of the HR record',
-        HR_RECORDS.RECORD_YEAR as YEAR(date) comment='Year of the HR record',
-        JOBS.JOB_KEY as JOB_KEY,
-        JOBS.JOB_LEVEL as job_level with synonyms=('level','grade','seniority') comment='Job level or grade',
-        JOBS.JOB_TITLE as job_title with synonyms=('job title','position','role') comment='Employee job title',
-        LOCATIONS.LOCATION_KEY as LOCATION_KEY,
-        LOCATIONS.LOCATION_NAME as location_name with synonyms=('location','office','site') comment='Work location'
-    )
-    metrics (
-        HR_RECORDS.ATTRITION_COUNT as SUM(hr_records.attrition_flag) comment='Number of employees who left',
-        HR_RECORDS.AVG_SALARY as AVG(hr_records.employee_salary) comment='average employee salary',
-        HR_RECORDS.TOTAL_EMPLOYEES as COUNT(hr_records.employee_record) comment='Total number of employees',
-        HR_RECORDS.TOTAL_SALARY_COST as SUM(hr_records.EMPLOYEE_SALARY) comment='Total salary cost'
-    )
-    comment='Semantic view for HR analytics and workforce management'
-    with extension (CA='{"tables":[{"name":"DEPARTMENTS","dimensions":[{"name":"DEPARTMENT_KEY"},{"name":"DEPARTMENT_NAME"}]},{"name":"EMPLOYEES","dimensions":[{"name":"EMPLOYEE_KEY"},{"name":"EMPLOYEE_NAME"},{"name":"GENDER"},{"name":"HIRE_DATE"}]},{"name":"HR_RECORDS","dimensions":[{"name":"DEPARTMENT_KEY"},{"name":"EMPLOYEE_KEY"},{"name":"HR_FACT_ID"},{"name":"JOB_KEY"},{"name":"LOCATION_KEY"},{"name":"RECORD_DATE"},{"name":"RECORD_MONTH"},{"name":"RECORD_YEAR"}],"facts":[{"name":"ATTRITION_FLAG","sample_values":["0","1"]},{"name":"EMPLOYEE_RECORD"},{"name":"EMPLOYEE_SALARY"}],"metrics":[{"name":"ATTRITION_COUNT"},{"name":"AVG_SALARY"},{"name":"TOTAL_EMPLOYEES"},{"name":"TOTAL_SALARY_COST"}]},{"name":"JOBS","dimensions":[{"name":"JOB_KEY"},{"name":"JOB_LEVEL"},{"name":"JOB_TITLE"}]},{"name":"LOCATIONS","dimensions":[{"name":"LOCATION_KEY"},{"name":"LOCATION_NAME"}]}],"relationships":[{"name":"HR_TO_DEPARTMENTS","relationship_type":"many_to_one"},{"name":"HR_TO_EMPLOYEES","relationship_type":"many_to_one"},{"name":"HR_TO_JOBS","relationship_type":"many_to_one"},{"name":"HR_TO_LOCATIONS","relationship_type":"many_to_one"}],"verified_queries":[{"name":"List of all active employees","question":"List of all active employees","sql":"select\\n  h.employee_key,\\n  e.employee_name,\\nfrom\\n  employees e\\n  left join hr_records h on e.employee_key = h.employee_key\\ngroup by\\n  all\\nhaving\\n  sum(h.attrition_flag) = 0;","use_as_onboarding_question":false,"verified_by":"Nick Akincilar","verified_at":1753846263},{"name":"List of all inactive employees","question":"List of all inactive employees","sql":"SELECT\\n  h.employee_key,\\n  e.employee_name\\nFROM\\n  employees AS e\\n  LEFT JOIN hr_records AS h ON e.employee_key = h.employee_key\\nGROUP BY\\n  ALL\\nHAVING\\n  SUM(h.attrition_flag) > 0","use_as_onboarding_question":false,"verified_by":"Nick Akincilar","verified_at":1753846300}],"custom_instructions":"- Each employee can have multiple hr_employee_fact records. \\n- Only one hr_employee_fact record per employee is valid and that is the one which has the highest date value."}');
-
+	tables (
+		DEPARTMENTS as DEPARTMENT_DIM primary key (DEPARTMENT_KEY) with synonyms=('departments','business units') comment='Department dimension for organizational analysis',
+		EMPLOYEES as EMPLOYEE_DIM primary key (EMPLOYEE_KEY) with synonyms=('employees','staff','workforce') comment='Employee dimension with personal information',
+		HR_RECORDS as HR_EMPLOYEE_FACT primary key (HR_FACT_ID) with synonyms=('hr data','employee records') comment='HR employee fact data for workforce analysis',
+		JOBS as JOB_DIM primary key (JOB_KEY) with synonyms=('job titles','positions','roles') comment='Job dimension with titles and levels',
+		LOCATIONS as LOCATION_DIM primary key (LOCATION_KEY) with synonyms=('locations','offices','sites') comment='Location dimension for geographic analysis'
+	)
+	relationships (
+		HR_TO_DEPARTMENTS as HR_RECORDS(DEPARTMENT_KEY) references DEPARTMENTS(DEPARTMENT_KEY),
+		HR_TO_EMPLOYEES as HR_RECORDS(EMPLOYEE_KEY) references EMPLOYEES(EMPLOYEE_KEY),
+		HR_TO_JOBS as HR_RECORDS(JOB_KEY) references JOBS(JOB_KEY),
+		HR_TO_LOCATIONS as HR_RECORDS(LOCATION_KEY) references LOCATIONS(LOCATION_KEY)
+	)
+	facts (
+		HR_RECORDS.ATTRITION_FLAG as attrition_flag with synonyms=('turnover_indicator','employee_departure_flag','separation_flag','employee_retention_status','churn_status','employee_exit_indicator') comment='Attrition flag. value is 0 if employee is currently active. 1 if employee quit & left the company. Always filter by 0 to show active employees unless specified otherwise',
+		HR_RECORDS.EMPLOYEE_RECORD as 1 comment='Count of employee records',
+		HR_RECORDS.EMPLOYEE_SALARY as salary comment='Employee salary in dollars'
+	)
+	dimensions (
+		DEPARTMENTS.DEPARTMENT_KEY as DEPARTMENT_KEY,
+		DEPARTMENTS.DEPARTMENT_NAME as department_name with synonyms=('department','business unit','division') comment='Name of the department',
+		EMPLOYEES.EMPLOYEE_KEY as EMPLOYEE_KEY,
+		EMPLOYEES.EMPLOYEE_NAME as employee_name with synonyms=('employee','staff member','person','sales rep','manager','director','executive') comment='Name of the employee',
+		EMPLOYEES.GENDER as gender with synonyms=('gender','sex') comment='Employee gender',
+		EMPLOYEES.HIRE_DATE as hire_date with synonyms=('hire date','start date') comment='Date when employee was hired',
+		HR_RECORDS.DEPARTMENT_KEY as DEPARTMENT_KEY,
+		HR_RECORDS.EMPLOYEE_KEY as EMPLOYEE_KEY,
+		HR_RECORDS.HR_FACT_ID as HR_FACT_ID,
+		HR_RECORDS.JOB_KEY as JOB_KEY,
+		HR_RECORDS.LOCATION_KEY as LOCATION_KEY,
+		HR_RECORDS.RECORD_DATE as date with synonyms=('date','record date') comment='Date of the HR record',
+		HR_RECORDS.RECORD_MONTH as MONTH(date) comment='Month of the HR record',
+		HR_RECORDS.RECORD_YEAR as YEAR(date) comment='Year of the HR record',
+		JOBS.JOB_KEY as JOB_KEY,
+		JOBS.JOB_LEVEL as job_level with synonyms=('level','grade','seniority') comment='Job level or grade',
+		JOBS.JOB_TITLE as job_title with synonyms=('job title','position','role') comment='Employee job title',
+		LOCATIONS.LOCATION_KEY as LOCATION_KEY,
+		LOCATIONS.LOCATION_NAME as location_name with synonyms=('location','office','site') comment='Work location'
+	)
+	metrics (
+		HR_RECORDS.ATTRITION_COUNT as SUM(hr_records.attrition_flag) comment='Number of employees who left',
+		HR_RECORDS.AVG_SALARY as AVG(hr_records.employee_salary) comment='average employee salary',
+		HR_RECORDS.TOTAL_EMPLOYEES as COUNT(hr_records.employee_record) comment='Total number of employees',
+		HR_RECORDS.TOTAL_SALARY_COST as SUM(hr_records.EMPLOYEE_SALARY) comment='Total salary cost'
+	)
+	comment='Semantic view for HR analytics and workforce management'
+	with extension (CA='{"tables":[{"name":"DEPARTMENTS","dimensions":[{"name":"DEPARTMENT_KEY"},{"name":"DEPARTMENT_NAME","sample_values":["Finance","Accounting","Treasury"]}]},{"name":"EMPLOYEES","dimensions":[{"name":"EMPLOYEE_KEY"},{"name":"EMPLOYEE_NAME","sample_values":["Grant Frey","Elizabeth George","Olivia Mcdaniel"]},{"name":"GENDER"},{"name":"HIRE_DATE"}]},{"name":"HR_RECORDS","dimensions":[{"name":"DEPARTMENT_KEY"},{"name":"EMPLOYEE_KEY"},{"name":"HR_FACT_ID"},{"name":"JOB_KEY"},{"name":"LOCATION_KEY"},{"name":"RECORD_DATE"},{"name":"RECORD_MONTH"},{"name":"RECORD_YEAR"}],"facts":[{"name":"ATTRITION_FLAG","sample_values":["0","1"]},{"name":"EMPLOYEE_RECORD"},{"name":"EMPLOYEE_SALARY"}],"metrics":[{"name":"ATTRITION_COUNT"},{"name":"AVG_SALARY"},{"name":"TOTAL_EMPLOYEES"},{"name":"TOTAL_SALARY_COST"}]},{"name":"JOBS","dimensions":[{"name":"JOB_KEY"},{"name":"JOB_LEVEL"},{"name":"JOB_TITLE"}]},{"name":"LOCATIONS","dimensions":[{"name":"LOCATION_KEY"},{"name":"LOCATION_NAME"}]}],"relationships":[{"name":"HR_TO_DEPARTMENTS","relationship_type":"many_to_one"},{"name":"HR_TO_EMPLOYEES","relationship_type":"many_to_one"},{"name":"HR_TO_JOBS","relationship_type":"many_to_one"},{"name":"HR_TO_LOCATIONS","relationship_type":"many_to_one"}],"verified_queries":[{"name":"List of all active employees","question":"List of all active employees","sql":"select\\n  h.employee_key,\\n  e.employee_name,\\nfrom\\n  employees e\\n  left join hr_records h on e.employee_key = h.employee_key\\ngroup by\\n  all\\nhaving\\n  sum(h.attrition_flag) = 0;","use_as_onboarding_question":false,"verified_by":"Nick Akincilar","verified_at":1753846263},{"name":"List of all inactive employees","question":"List of all inactive employees","sql":"SELECT\\n  h.employee_key,\\n  e.employee_name\\nFROM\\n  employees AS e\\n  LEFT JOIN hr_records AS h ON e.employee_key = h.employee_key\\nGROUP BY\\n  ALL\\nHAVING\\n  SUM(h.attrition_flag) > 0","use_as_onboarding_question":false,"verified_by":"Nick Akincilar","verified_at":1753846300}],"custom_instructions":"- Each employee can have multiple hr_employee_fact records. \\n- Only one hr_employee_fact record per employee is valid and that is the one which has the highest date value."}');
   -- ========================================================================
   -- VERIFICATION
   -- ========================================================================
@@ -924,11 +922,6 @@ CREATE OR REPLACE EXTERNAL ACCESS INTEGRATION Snowflake_intelligence_ExternalAcc
   ALLOWED_NETWORK_RULES = (Snowflake_intelligence_WebAccessRule)
   ENABLED = true;
 
-CREATE NOTIFICATION INTEGRATION ai_email_int
-  TYPE=EMAIL
-  ENABLED=TRUE;
-
-GRANT USAGE ON INTEGRATION ai_email_int TO ROLE sf_intelligence_demo;
 
 
 GRANT USAGE ON DATABASE snowflake_intelligence TO ROLE SF_Intelligence_Demo;
@@ -1231,3 +1224,4 @@ FROM SPECIFICATION $$
   }
 }
 $$;
+
