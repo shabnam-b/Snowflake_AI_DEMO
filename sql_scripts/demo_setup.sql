@@ -918,15 +918,22 @@ CREATE OR REPLACE NETWORK RULE Snowflake_intelligence_WebAccessRule
 
 use role accountadmin;
 
+GRANT ALL PRIVILEGES ON DATABASE SF_AI_DEMO TO ROLE ACCOUNTADMIN;
+GRANT ALL PRIVILEGES ON SCHEMA SF_AI_DEMO.DEMO_SCHEMA TO ROLE ACCOUNTADMIN;
+GRANT USAGE ON NETWORK RULE snowflake_intelligence_webaccessrule TO ROLE accountadmin;
+
+USE SCHEMA SF_AI_DEMO.DEMO_SCHEMA;
+
 CREATE OR REPLACE EXTERNAL ACCESS INTEGRATION Snowflake_intelligence_ExternalAccess_Integration
-  ALLOWED_NETWORK_RULES = (Snowflake_intelligence_WebAccessRule)
-  ENABLED = true;
-
-
+ALLOWED_NETWORK_RULES = (Snowflake_intelligence_WebAccessRule)
+ENABLED = true;
 
 GRANT USAGE ON DATABASE snowflake_intelligence TO ROLE SF_Intelligence_Demo;
 GRANT USAGE ON SCHEMA snowflake_intelligence.agents TO ROLE SF_Intelligence_Demo;
 GRANT CREATE AGENT ON SCHEMA snowflake_intelligence.agents TO ROLE SF_Intelligence_Demo;
+
+GRANT USAGE ON INTEGRATION Snowflake_intelligence_ExternalAccess_Integration TO ROLE SF_Intelligence_Demo;
+
 
 use role SF_Intelligence_Demo;
 -- CREATES A SNOWFLAKE INTELLIGENCE AGENT WITH MULTIPLE TOOLS
@@ -1224,4 +1231,3 @@ FROM SPECIFICATION $$
   }
 }
 $$;
-
