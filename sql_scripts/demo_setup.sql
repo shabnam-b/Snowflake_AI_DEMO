@@ -929,11 +929,17 @@ CREATE OR REPLACE EXTERNAL ACCESS INTEGRATION Snowflake_intelligence_ExternalAcc
 ALLOWED_NETWORK_RULES = (Snowflake_intelligence_WebAccessRule)
 ENABLED = true;
 
+CREATE NOTIFICATION INTEGRATION ai_email_int
+  TYPE=EMAIL
+  ENABLED=TRUE;
+
 GRANT USAGE ON DATABASE snowflake_intelligence TO ROLE SF_Intelligence_Demo;
 GRANT USAGE ON SCHEMA snowflake_intelligence.agents TO ROLE SF_Intelligence_Demo;
 GRANT CREATE AGENT ON SCHEMA snowflake_intelligence.agents TO ROLE SF_Intelligence_Demo;
 
 GRANT USAGE ON INTEGRATION Snowflake_intelligence_ExternalAccess_Integration TO ROLE SF_Intelligence_Demo;
+
+GRANT USAGE ON INTEGRATION AI_EMAIL_INT TO ROLE SF_INTELLIGENCE_DEMO;
 
 
 use role SF_Intelligence_Demo;
