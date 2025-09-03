@@ -6,6 +6,38 @@ This project demonstrates the comprehensive Snowflake Intelligence capabilities 
 - **Snowflake Intelligence Agent** (Multi-tool AI agent with orchestration)
 - **Git Integration** (Automated data loading from GitHub repository)
 
+
+## Setup Instructions
+
+**Single Script Setup**: The entire demo environment is created with one script:
+
+1. **Run the complete setup script**:
+   ```sql
+   -- Execute in Snowflake worksheet
+   /sql_scripts/demo_setup.sql
+   ```
+
+2. **What the script creates**:
+   - `SF_Intelligence_Demo` role and permissions
+   - `Snow_Intelligence_demo_wh` warehouse
+   - `SF_AI_DEMO.DEMO_SCHEMA` database and schema
+   - Git repository integration
+   - All dimension and fact tables with data
+   - 4 semantic views for Cortex Analyst
+   - 4 Cortex Search services for documents
+   - Web scraping function with external access integration
+   - 1 Snowflake Intelligence Agent with multi-tool capabilities
+
+3. **Post-Setup Verification(Optional)**:
+   - Run `SHOW TABLES;` to verify 20 tables created (17 original + 3 Salesforce CRM)
+   - Run `SHOW SEMANTIC VIEWS;` to verify 4 semantic views
+   - Run `SHOW CORTEX SEARCH SERVICES;` to verify 4 search services
+   - Run `SHOW FUNCTIONS LIKE 'WEB_SCRAPE';` to verify web scraping function
+4. **RUN DEMO**:
+   - Use AI/ML option on the left navigation bar
+   - Pick "Snowflake Intelligence"
+   - Make sure to pick the right agent at the bottom-left 
+
 ## Key Components
 
 ### 1. Data Infrastructure
@@ -209,36 +241,6 @@ graph TD
 - `sf_opportunities` - Sales pipeline and revenue data (25,000 records)
 - `sf_contacts` - Contact records with campaign attribution (37,563 records)
 
-## Setup Instructions
-
-**Single Script Setup**: The entire demo environment is created with one script:
-
-1. **Run the complete setup script**:
-   ```sql
-   -- Execute in Snowflake worksheet
-   /sql_scripts/demo_setup.sql
-   ```
-
-2. **What the script creates**:
-   - `SF_Intelligence_Demo` role and permissions
-   - `Snow_Intelligence_demo_wh` warehouse
-   - `SF_AI_DEMO.DEMO_SCHEMA` database and schema
-   - Git repository integration
-   - All dimension and fact tables with data
-   - 4 semantic views for Cortex Analyst
-   - 4 Cortex Search services for documents
-   - Web scraping function with external access integration
-   - 1 Snowflake Intelligence Agent with multi-tool capabilities
-
-3. **Post-Setup Verification(Optional)**:
-   - Run `SHOW TABLES;` to verify 20 tables created (17 original + 3 Salesforce CRM)
-   - Run `SHOW SEMANTIC VIEWS;` to verify 4 semantic views
-   - Run `SHOW CORTEX SEARCH SERVICES;` to verify 4 search services
-   - Run `SHOW FUNCTIONS LIKE 'WEB_SCRAPE';` to verify web scraping function
-4. **RUN DEMO**:
-   - Use AI/ML option on the left navigation bar
-   - Pick "Snowflake Intelligence"
-   - Make sure to pick the right agent at the bottom-left 
 
 
 
