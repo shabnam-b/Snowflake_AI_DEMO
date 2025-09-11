@@ -311,8 +311,6 @@ The following questions demonstrate the agent's ability to perform cross-domain 
 3. **External Data Integration**  
    "Get the latest information from [company news URL] and analyze its potential impact on our sales forecast."
 
-**Ultimate Cross-Domain Question**  
-"Create a comprehensive business dashboard showing: sales performance by top reps, their tenure and compensation, marketing campaigns that generated their leads, the complete customer journey from campaign to closed deal, and the ROI of each marketing channel. Include any relevant policy information from our documents and external market data from [industry URL]."
 
 ### 📋 Demo Flow Recommendation
 1. **Start with Sales**: Establish baseline performance metrics and customer data
