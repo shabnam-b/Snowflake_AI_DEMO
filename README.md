@@ -319,21 +319,7 @@ The following questions demonstrate the agent's ability to perform cross-domain 
 3. **External Data Integration**  
    "Get the latest information from [company news URL] and analyze its potential impact on our sales forecast."
 
-<<<<<<< local
-**File Sharing & Access Questions**  
-1. **Data Export & Sharing**  
-   "Generate a secure download link for our sales data that I can share with the executive team."
 
-2. **Document Access**  
-   "Create a temporary URL for the latest financial report in our internal stage for board review."
-
-3. **Secure File Distribution**  
-   "I need to share our marketing campaign data with an external consultant. Generate a 24-hour access link."
-
-**Ultimate Cross-Domain Question**  
-"Create a comprehensive business dashboard showing: sales performance by top reps, their tenure and compensation, marketing campaigns that generated their leads, the complete customer journey from campaign to closed deal, and the ROI of each marketing channel. Include any relevant policy information from our documents and external market data from [industry URL]."
-=======
->>>>>>> remote
 
 ### 📋 Demo Flow Recommendation
 1. **Start with Sales**: Establish baseline performance metrics and customer data
