@@ -76,7 +76,7 @@
       -- Create API Integration for GitHub (public repository access)
       CREATE OR REPLACE API INTEGRATION git_api_integration
           API_PROVIDER = git_https_api
-          API_ALLOWED_PREFIXES = ('https://github.com/NickAkincilar/')
+          API_ALLOWED_PREFIXES = ('https://github.com/shabnam-b/')
           ENABLED = TRUE;
 
 
@@ -87,7 +87,7 @@
       -- Create Git repository integration for the public demo repository
       CREATE OR REPLACE GIT REPOSITORY SF_AI_DEMO_REPO
           API_INTEGRATION = git_api_integration
-          ORIGIN = 'https://github.com/NickAkincilar/Snowflake_AI_DEMO.git';
+          ORIGIN = 'https://github.com/shabnam-b/Snowflake_AI_DEMO.git';
 
       -- Create internal stage for copied data files
       CREATE OR REPLACE STAGE INTERNAL_DATA_STAGE
@@ -106,11 +106,6 @@
       COPY FILES
       INTO @INTERNAL_DATA_STAGE/demo_data/
       FROM @SF_AI_DEMO_REPO/branches/main/demo_data/;
-
-
-      COPY FILES
-      INTO @INTERNAL_DATA_STAGE/unstructured_docs/
-      FROM @SF_AI_DEMO_REPO/branches/main/unstructured_docs/;
 
       -- Verify files were copied
       LS @INTERNAL_DATA_STAGE;
@@ -869,8 +864,8 @@
   -- - Web_scraper, Send_Emails, Dynamic_Doc_URL_Tool
   -- - All related functions, procedures, and integrations
 
-  CREATE OR REPLACE AGENT SNOWFLAKE_INTELLIGENCE.AGENTS.Company_Chatbot_Agent_Retail
-  WITH PROFILE='{ "display_name": "1-Company Chatbot Agent - Retail" }'
+  CREATE OR REPLACE AGENT SNOWFLAKE_INTELLIGENCE.AGENTS.Company_Chatbot_Agent_Retail_Eval
+  WITH PROFILE='{ "display_name": "Eval - Company Chatbot Agent - Retail" }'
       COMMENT=$$ This is an agent that can answer questions about company specific Sales, Marketing, HR & Finance questions. $$
   FROM SPECIFICATION $$
   {
